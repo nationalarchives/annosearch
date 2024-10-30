@@ -3,7 +3,7 @@ import { search as searchFunction } from './search';
 class AnnoSearch {
   // Method to perform the search query
   async search(indexId: string, query: string, maxHits: number) {
-    await searchFunction(indexId, query, maxHits);
+    return await searchFunction(indexId, query, maxHits);
   }
 }
 

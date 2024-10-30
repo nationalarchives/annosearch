@@ -11,14 +11,16 @@ export async function search(indexId: string, query: string, maxHits: number) {
       max_hits: maxHits
     });
 
-    // Log the results
-    console.log(response.data);
+    // Return the results
+    return response.data;
   } catch (error: any) {
     // Handle the error
     if (error.response) {
       console.error('Quickwit query error:', error.response.data);
+      throw new Error(error.response.data);
     } else {
       console.error('Quickwit query error:', error.message);
+      throw new Error(error.message);
     }
   }
 }
