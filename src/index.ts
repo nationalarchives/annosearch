@@ -43,8 +43,9 @@ async function serveCommand(argv: any) {
     const app = express();
     const port = argv.port || 3000;
 
-    app.get('/search', async (req, res) => {
-        const { index, query, max_hits } = req.query;
+    app.get('/:index/search', async (req, res) => {
+        const { index } = req.params;
+        const { query, max_hits } = req.query;
         try {
             const results = await client.search(index as string, query as string, parseInt(max_hits as string) || 10);
             res.json(results);
