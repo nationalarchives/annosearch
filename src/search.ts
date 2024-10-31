@@ -1,4 +1,6 @@
 import axios from 'axios';
+import { off } from 'process';
+import { start } from 'repl';
 
 const axiosInstance = axios.create({
     baseURL: process.env.QUICKWIT_BASE_URL || 'http://localhost:7280/api/v1/',
@@ -8,13 +10,14 @@ const axiosInstance = axios.create({
     timeout: 5000, // Set timeout to 5 seconds
 });
 
-export async function search(indexId: string, query: string, maxHits: number) {
+export async function search(indexId: string, query: string, maxHits: number, startOffset: number) {
     try {
         console.log(`Sending request to Quickwit with indexId: ${indexId}, query: ${query}, and maxHits: ${maxHits}`);
 
         const response = await axiosInstance.post(`${indexId}/search`, {
             query: query,
-            max_hits: maxHits
+            max_hits: maxHits,
+            start_offset: startOffset,
         });
 
         return response.data;

@@ -4,6 +4,7 @@ import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
 import { printResults, handleError } from './utils';
+import { parse } from 'path';
 
 const client = new AnnoSearch();
 
@@ -21,6 +22,12 @@ async function searchOptions(yargs: any) {
             description: 'Search query',
             demandOption: true,
         })
+        .option('offset', {
+            alias: 'o',
+            type: 'number',
+            description: 'Start offset',
+            default: 0, // Default start_offset if not specified
+        })
         .option('max_hits', {
             alias: 'm',
             type: 'number',
@@ -31,8 +38,8 @@ async function searchOptions(yargs: any) {
 
 async function searchCommand(argv: any) {
     try {
-        console.log(`Searching index: ${argv.index}, Query: ${argv.query}, Max Hits: ${argv.max_hits}`);
-        const results = await client.search(argv.index as string, argv.query as string, argv.max_hits as number);
+        console.log(`Searching index: ${argv.index}, Query: ${argv.query}, Max Hits: ${argv.max_hits} and Offset: ${argv.offset}`);
+        const results = await client.search(argv.index as string, argv.query as string, argv.max_hits as number, argv.offset as number);
         printResults(results);
     } catch (error) {
         handleError(error);
@@ -47,7 +54,7 @@ async function serveCommand(argv: any) {
         const { index } = req.params;
         const { query, max_hits } = req.query;
         try {
-            const results = await client.search(index as string, query as string, parseInt(max_hits as string) || 10);
+            const results = await client.search(index as string, query as string, parseInt(max_hits as string) || 10, parseInt(req.query.offset as string) || 0);
             res.json(results);
         } catch (error) {
             const errorMessage = (error as Error).message;
