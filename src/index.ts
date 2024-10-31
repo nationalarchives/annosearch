@@ -1,4 +1,5 @@
 import yargs from 'yargs';
+import express from 'express';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
@@ -38,6 +39,40 @@ async function searchCommand(argv: any) {
     }
 }
 
+async function serveCommand(argv: any) {
+    const app = express();
+    const port = argv.port || 3000;
+
+    app.get('/search', async (req, res) => {
+        const { index, query, max_hits } = req.query;
+        try {
+            const results = await client.search(index as string, query as string, parseInt(max_hits as string) || 10);
+            res.json(results);
+        } catch (error) {
+            const errorMessage = (error as Error).message;
+            res.status(500).json({ error: errorMessage });
+        }
+    });
+
+    app.get('/version', async (req, res) => {
+        res.json({ version });
+    });
+
+    app.listen(port, () => {
+        console.log(`Server is running on http://localhost:${port}`);
+    });
+}
+
+async function serveOptions(yargs: any) {
+    return yargs.option('port', {
+        alias: 'p',
+        type: 'number',
+        description: 'Port to run the server on',
+        default: 3000,
+    });
+}
+
+
 async function versionOptions(yargs: any) { }
 
 function versionCommand() {
@@ -50,6 +85,7 @@ async function main() {
             .scriptName('annosearch')
             .usage('$0 <command> [options]')
             .command('search', 'Perform a search query on a specified index', searchOptions, searchCommand)
+            .command('serve', 'Start an Express server to call search', serveOptions, serveCommand)
             .command('version', 'Show the version of the application', versionOptions, versionCommand)
             .demandCommand(1, 'You need to specify a command (e.g., search, version)')
             .strict()
