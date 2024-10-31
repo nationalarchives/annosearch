@@ -4,7 +4,6 @@ import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
 import { printResults, handleError } from './utils';
-import { parse } from 'path';
 
 const client = new AnnoSearch();
 
@@ -27,19 +26,13 @@ async function searchOptions(yargs: any) {
             type: 'number',
             description: 'Page number',
             default: 0, // Default page number if not specified
-        })
-        .option('max_hits', {
-            alias: 'm',
-            type: 'number',
-            description: 'Maximum number of hits',
-            default: 10, // Default max_hits if not specified
         });
 }
 
 async function searchCommand(argv: any) {
     try {
-        const offset = argv.page * argv.max_hits;
-        const results = await client.search(argv.index as string, argv.query as string, argv.max_hits as number, offset as number);
+        const offset = argv.page * client.getMaxHits();
+        const results = await client.search(argv.index as string, argv.query as string, offset as number);
         printResults(results);
     } catch (error) {
         handleError(error);
@@ -52,14 +45,13 @@ async function serveCommand(argv: any) {
 
     app.get('/:index/search', async (req, res) => {
         const { index } = req.params;
-        const { query, max_hits, page } = req.query;
+        const { q, page } = req.query;
 
-        const maxHits = parseInt(max_hits as string) || 10;
         const pageNumber = parseInt(page as string) || 0;
-        const offset = pageNumber * maxHits;
+        const offset = pageNumber * client.getMaxHits();
 
         try {
-            const results = await client.search(index as string, query as string, maxHits, offset);
+            const results = await client.search(index as string, q as string, offset);
             res.json(results);
         } catch (error) {
             const errorMessage = (error as Error).message;

@@ -1,9 +1,23 @@
 import { search as searchFunction } from './search';
 
 class AnnoSearch {
-  // Method to perform the search query
-  async search(indexId: string, query: string, maxHits: number, startOffset: number) {
-    return await searchFunction(indexId, query, maxHits, startOffset);
+  
+  private maxHits: number;
+
+  constructor(maxHits: number = 10) {
+    this.maxHits = maxHits; 
+  }
+
+  setMaxHits(maxHits: number) {
+    this.maxHits = maxHits;
+  }
+
+  getMaxHits(): number {
+    return this.maxHits;
+  }
+
+  async search(indexId: string, query: string, startOffset: number) {
+    return await searchFunction(indexId, query, this.maxHits, startOffset);
   }
 }
 
