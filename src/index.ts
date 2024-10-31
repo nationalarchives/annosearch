@@ -41,7 +41,9 @@ async function searchCommand(argv: any) {
 
 async function serveCommand(argv: any) {
     const app = express();
-    const port = argv.port || 3000;
+
+    const port = argv.port;
+    const host = argv.host;
 
     app.get('/:index/search', async (req, res) => {
         const { index } = req.params;
@@ -64,19 +66,22 @@ async function serveCommand(argv: any) {
     });
 
     app.listen(port, () => {
-        console.log(`Server is running on http://localhost:${port}`);
+        console.log(`Server is running on ${host}:${port}`);
     });
 }
 
 async function serveOptions(yargs: any) {
     return yargs.option('port', {
-        alias: 'p',
         type: 'number',
         description: 'Port to run the server on',
-        default: 3000,
+        default: client.getPort(),
+    })
+    .option('host', {
+        type: 'string',
+        description: 'Host to run the server on',
+        default: client.getHost(),
     });
 }
-
 
 async function versionOptions(yargs: any) { }
 
