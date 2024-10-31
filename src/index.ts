@@ -22,11 +22,11 @@ async function searchOptions(yargs: any) {
             description: 'Search query',
             demandOption: true,
         })
-        .option('offset', {
-            alias: 'o',
+        .option('page', {
+            alias: 'p',
             type: 'number',
-            description: 'Start offset',
-            default: 0, // Default start_offset if not specified
+            description: 'Page number',
+            default: 0, // Default page number if not specified
         })
         .option('max_hits', {
             alias: 'm',
@@ -38,8 +38,8 @@ async function searchOptions(yargs: any) {
 
 async function searchCommand(argv: any) {
     try {
-        console.log(`Searching index: ${argv.index}, Query: ${argv.query}, Max Hits: ${argv.max_hits} and Offset: ${argv.offset}`);
-        const results = await client.search(argv.index as string, argv.query as string, argv.max_hits as number, argv.offset as number);
+        const offset = argv.page * argv.max_hits;
+        const results = await client.search(argv.index as string, argv.query as string, argv.max_hits as number, offset as number);
         printResults(results);
     } catch (error) {
         handleError(error);
@@ -52,9 +52,14 @@ async function serveCommand(argv: any) {
 
     app.get('/:index/search', async (req, res) => {
         const { index } = req.params;
-        const { query, max_hits } = req.query;
+        const { query, max_hits, page } = req.query;
+
+        const maxHits = parseInt(max_hits as string) || 10;
+        const pageNumber = parseInt(page as string) || 0;
+        const offset = pageNumber * maxHits;
+
         try {
-            const results = await client.search(index as string, query as string, parseInt(max_hits as string) || 10, parseInt(req.query.offset as string) || 0);
+            const results = await client.search(index as string, query as string, maxHits, offset);
             res.json(results);
         } catch (error) {
             const errorMessage = (error as Error).message;
