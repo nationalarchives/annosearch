@@ -39,6 +39,23 @@ async function searchCommand(argv: any) {
     }
 }
 
+async function initCommand(argv: any) {
+    try {
+        await client.init(argv.index as string);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+async function initOptions(yargs: any) {
+    return yargs.option('index', {
+        alias: 'i',
+        type: 'string',
+        description: 'Index ID',
+        demandOption: true,
+    });
+}
+
 async function serveCommand(argv: any) {
     const app = express();
 
@@ -94,6 +111,7 @@ async function main() {
         await yargs(hideBin(process.argv))
             .scriptName('annosearch')
             .usage('$0 <command> [options]')
+            .command('init', 'Initialize an index with the provided ID', initOptions, initCommand)
             .command('search', 'Perform a search query on a specified index', searchOptions, searchCommand)
             .command('serve', 'Start an Express server to call search', serveOptions, serveCommand)
             .command('version', 'Show the version of the application', versionOptions, versionCommand)

@@ -1,4 +1,5 @@
 import { search as searchFunction } from './search';
+import { init } from './init';
 
 class AnnoSearch {
     constructor(
@@ -33,6 +34,10 @@ class AnnoSearch {
 
     async search(indexId: string, query: string, startOffset: number) {
         return searchFunction(indexId, query, this.maxHits, startOffset);
+    }
+
+    async init(indexId: string) {
+        return await init(indexId);
     }
     
 }
