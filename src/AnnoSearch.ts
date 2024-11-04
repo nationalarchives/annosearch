@@ -32,8 +32,9 @@ class AnnoSearch {
     }
 
     async search(indexId: string, query: string, startOffset: number) {
-        return await searchFunction(indexId, query, this.maxHits, startOffset);
+        return searchFunction(indexId, query, this.maxHits, startOffset);
     }
+    
 }
 
 export default AnnoSearch;
