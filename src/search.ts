@@ -8,7 +8,7 @@ const axiosInstance = axios.create({
     timeout: 5000, // Set timeout to 5 seconds
 });
 
-export async function search(indexId: string, query: string, maxHits: number, startOffset: number) {
+export async function searchIndex(indexId: string, query: string, maxHits: number, startOffset: number) {
     try {
         console.log(`Sending request to Quickwit with indexId: ${indexId}, query: ${query}, and maxHits: ${maxHits} at offset: ${startOffset}`);
 

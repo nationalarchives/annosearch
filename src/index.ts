@@ -32,7 +32,7 @@ async function searchOptions(yargs: any) {
 async function searchCommand(argv: any) {
     try {
         const offset = argv.page * client.getMaxHits();
-        const results = await client.search(argv.index as string, argv.query as string, offset as number);
+        const results = await client.searchIndex(argv.index as string, argv.query as string, offset as number);
         printResults(results);
     } catch (error) {
         handleError(error);
@@ -41,13 +41,30 @@ async function searchCommand(argv: any) {
 
 async function initCommand(argv: any) {
     try {
-        await client.init(argv.index as string);
+        await client.initIndex(argv.index as string);
     } catch (error) {
         handleError(error);
     }
 }
 
 async function initOptions(yargs: any) {
+    return yargs.option('index', {
+        alias: 'i',
+        type: 'string',
+        description: 'Index ID',
+        demandOption: true,
+    });
+}
+
+async function deleteCommand(argv: any) {
+    try {
+        await client.deleteIndex(argv.index as string);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+async function deleteOptions(yargs: any) {
     return yargs.option('index', {
         alias: 'i',
         type: 'string',
@@ -70,7 +87,7 @@ async function serveCommand(argv: any) {
         const offset = pageNumber * client.getMaxHits();
 
         try {
-            const results = await client.search(index as string, q as string, offset);
+            const results = await client.searchIndex(index as string, q as string, offset);
             res.json(results);
         } catch (error) {
             const errorMessage = (error as Error).message;
@@ -112,6 +129,7 @@ async function main() {
             .scriptName('annosearch')
             .usage('$0 <command> [options]')
             .command('init', 'Initialize an index with the provided ID', initOptions, initCommand)
+            .command('delete', 'Delete an index with the provided ID', deleteOptions, deleteCommand)
             .command('search', 'Perform a search query on a specified index', searchOptions, searchCommand)
             .command('serve', 'Start an Express server to call search', serveOptions, serveCommand)
             .command('version', 'Show the version of the application', versionOptions, versionCommand)

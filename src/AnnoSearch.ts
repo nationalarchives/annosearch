@@ -1,5 +1,6 @@
-import { search as searchFunction } from './search';
-import { init } from './init';
+import { searchIndex as searchFunction } from './search';
+import { initIndex as initFunction } from './init';
+import { deleteIndex as deleteFunction } from './delete';
 
 class AnnoSearch {
     constructor(
@@ -32,14 +33,17 @@ class AnnoSearch {
         return this.maxHits;
     }
 
-    async search(indexId: string, query: string, startOffset: number) {
+    async searchIndex(indexId: string, query: string, startOffset: number) {
         return searchFunction(indexId, query, this.maxHits, startOffset);
     }
 
-    async init(indexId: string) {
-        return await init(indexId);
+    async initIndex(indexId: string) {
+        return await initFunction(indexId);
     }
-    
+
+    async deleteIndex(indexId: string) {
+        return await deleteFunction(indexId);
+    }
 }
 
 export default AnnoSearch;

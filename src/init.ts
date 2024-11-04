@@ -30,7 +30,7 @@ async function postIndexConfig(data: string) {
 }
 
 // Initialization function
-export async function init(indexId: string) {
+export async function initIndex(indexId: string) {
     const filePath = path.resolve(__dirname, 'index-config.yaml');
 
     try {
