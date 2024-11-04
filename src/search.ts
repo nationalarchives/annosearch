@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleError } from './utils';
 
 const axiosInstance = axios.create({
     baseURL: process.env.QUICKWIT_BASE_URL || 'http://localhost:7280/api/v1/',
@@ -20,12 +21,6 @@ export async function searchIndex(indexId: string, query: string, maxHits: numbe
 
         return response.data;
     } catch (error: any) {
-        if (error.response) {
-            console.error('Quickwit query error:', error.response.data);
-            throw new Error(`Quickwit query failed: ${error.response.statusText}`);
-        } else {
-            console.error('Quickwit query error:', error.message);
-            throw new Error(error.message);
-        }
+        handleError(error);
     }
 }

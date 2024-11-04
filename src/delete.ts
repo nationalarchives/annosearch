@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { handleError } from './utils';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
@@ -14,10 +15,6 @@ export async function deleteIndex(indexId: string) {
         const response = await axiosInstance.delete(`indexes/${indexId}`);
         console.log('Response:', response.data);
     } catch (error) {
-        if (error instanceof Error) {
-            console.error('Error:', error.message);
-        } else {
-            console.error('Unexpected error:', error);
-        }
+        handleError(error);
     }
 }

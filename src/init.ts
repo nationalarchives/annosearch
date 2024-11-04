@@ -2,6 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
+import { handleError } from './utils';
 
 // Create an Axios instance
 const axiosInstance = axios.create({
@@ -41,10 +42,6 @@ export async function initIndex(indexId: string) {
         const response = await postIndexConfig(modifiedYamlData);
         console.log('Response:', response.data);
     } catch (error) {
-        if (error instanceof Error) {
-            console.error('Error:', error.message);
-        } else {
-            console.error('Unexpected error:', error);
-        }
+        handleError(error);
     }
 }
