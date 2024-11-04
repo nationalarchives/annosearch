@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 const baseURL = process.env.QUICKWIT_BASE_URL || 'http://localhost:7280/api/v1/';
+const timeout = parseInt(process.env.QUICKWIT_TIMEOUT || '5000', 10);
 
 export function createAxiosInstance(contentType: 'application/json' | 'application/yaml') {
     return axios.create({
@@ -8,6 +9,6 @@ export function createAxiosInstance(contentType: 'application/json' | 'applicati
         headers: {
             'Content-Type': contentType,
         },
-        timeout: 5000, // Set timeout to 5 seconds
+        timeout: timeout, // 5 seconds timeout
     });
 }

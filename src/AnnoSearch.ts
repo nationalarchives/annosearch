@@ -2,12 +2,30 @@ import { searchIndex as searchFunction } from './search';
 import { initIndex as initFunction } from './init';
 import { deleteIndex as deleteFunction } from './delete';
 
+interface Config {
+    maxHits: number;
+    port: number;
+    host: string;
+}
+
+function loadConfig(): Config {
+    return {
+        maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '10', 10),
+        port: parseInt(process.env.ANNOSEARCH_PORT || '3000', 10),
+        host: process.env.ANNOSEARCH_HOST || 'http://localhost',
+    };
+}
+
 class AnnoSearch {
-    constructor(
-        private maxHits: number = 10,
-        private port: number = 3000,
-        private host: string = 'http://localhost'
-    ) { }
+    private maxHits: number;
+    private port: number;
+    private host: string;
+
+    constructor({ maxHits, port, host }: Config = loadConfig()) {
+        this.maxHits = maxHits;
+        this.port = port;
+        this.host = host;
+    }
 
     setHost(host: string) {
         this.host = host;
