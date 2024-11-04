@@ -1,17 +1,11 @@
-import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { handleError } from './utils';
+import { createAxiosInstance } from './quickwit';
 
-// Create an Axios instance
-const axiosInstance = axios.create({
-    baseURL: process.env.QUICKWIT_BASE_URL || 'http://localhost:7280/api/v1/',
-    headers: {
-        'Content-Type': 'application/yaml',
-    },
-    timeout: 5000, // Set timeout to 5 seconds
-});
+const contentType = 'application/yaml'; 
+const axiosInstance = createAxiosInstance(contentType);
 
 // Function to read YAML configuration file
 function readYamlConfig(filePath: string) {

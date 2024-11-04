@@ -1,14 +1,8 @@
-import axios from 'axios';
 import { handleError } from './utils';
+import { createAxiosInstance } from './quickwit';
 
-// Create an Axios instance
-const axiosInstance = axios.create({
-    baseURL: process.env.QUICKWIT_BASE_URL || 'http://localhost:7280/api/v1/',
-    headers: {
-        'Content-Type': 'application/json',
-    },
-    timeout: 5000, // Set timeout to 5 seconds
-});
+const contentType = 'application/json'; 
+const axiosInstance = createAxiosInstance(contentType);
 
 export async function deleteIndex(indexId: string) {
     try {
