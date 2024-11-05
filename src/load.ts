@@ -1,13 +1,23 @@
 import { Maniiifest } from 'maniiifest';
 import { fetchJson, printJson } from './utils';
+import { AnnotationPageT } from 'maniiifest/dist/specification';
 
-async function processAnnotationPage(annotationPageUrl: string) {
-    const jsonData = await fetchJson(annotationPageUrl);
-    const parser = new Maniiifest(jsonData, "AnnotationPage");
+async function processAnnotations(parser: any) {
     const annotations = parser.iterateAnnotationPageAnnotation();
     for (const annotation of annotations) {
         printJson(annotation);
     }
+}
+
+async function processAnnotationPageRef(annotationPageUrl: string) {
+    const jsonData = await fetchJson(annotationPageUrl);
+    const parser = new Maniiifest(jsonData, "AnnotationPage");
+    await processAnnotations(parser);
+}
+
+async function processAnnotationPage(page: AnnotationPageT) {
+    const parser = new Maniiifest(page, "AnnotationPage");
+    await processAnnotations(parser);
 }
 
 async function processManifest(manifestUrl: string) {
@@ -19,7 +29,11 @@ async function processManifest(manifestUrl: string) {
     }
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
-        await processAnnotationPage(page.id);
+        if (page.items) {
+            await processAnnotationPage(page);
+        } else {
+            await processAnnotationPageRef(page.id);
+        }
     }
 }
 
@@ -46,7 +60,6 @@ async function processCollection(collectionUrl: string) {
 }
 
 export async function loadIndex(indexId: string, uri: string, type: string) {
-    console.log(indexId, uri);
     switch (type) {
         case 'Manifest':
             await processManifest(uri);
