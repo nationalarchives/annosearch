@@ -1,6 +1,7 @@
 import { searchIndex as searchFunction } from './search';
 import { initIndex as initFunction } from './init';
 import { deleteIndex as deleteFunction } from './delete';
+import { loadIndex as loadFunction } from './load';
 
 interface Config {
     maxHits: number;
@@ -49,6 +50,10 @@ class AnnoSearch {
 
     getMaxHits(): number {
         return this.maxHits;
+    }
+
+    async loadIndex(indexId: string, uri: string) {
+        return await loadFunction(indexId, uri);
     }
 
     async searchIndex(indexId: string, query: string, startOffset: number) {

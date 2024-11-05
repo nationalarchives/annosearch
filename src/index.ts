@@ -56,6 +56,30 @@ async function initOptions(yargs: any) {
     });
 }
 
+async function loadCommand(argv: any) {
+    try {
+        await client.loadIndex(argv.index as string, argv.uri as string);
+    } catch (error) {
+        handleError(error);
+    }
+}
+
+async function loadOptions(yargs: any) {
+    return yargs
+        .option('index', {
+            alias: 'i',
+            type: 'string',
+            description: 'Index ID',
+            demandOption: true,
+        })
+        .option('uri', {
+            alias: 'u',
+            type: 'string',
+            description: 'URI to load the index from',
+            demandOption: true,
+        });
+}
+
 async function deleteCommand(argv: any) {
     try {
         await client.deleteIndex(argv.index as string);
@@ -129,6 +153,7 @@ async function main() {
             .scriptName('annosearch')
             .usage('$0 <command> [options]')
             .command('init', 'Initialize an index with the provided ID', initOptions, initCommand)
+            .command('load', 'Load an index with the provided ID from a URI', loadOptions, loadCommand)
             .command('delete', 'Delete an index with the provided ID', deleteOptions, deleteCommand)
             .command('search', 'Perform a search query on a specified index', searchOptions, searchCommand)
             .command('serve', 'Start an Express server to call search', serveOptions, serveCommand)
