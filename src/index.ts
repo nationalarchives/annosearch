@@ -58,7 +58,7 @@ async function initOptions(yargs: any) {
 
 async function loadCommand(argv: any) {
     try {
-        await client.loadIndex(argv.index as string, argv.uri as string);
+        await client.loadIndex(argv.index as string, argv.uri as string, argv.type as string);
     } catch (error) {
         handleError(error);
     }
@@ -71,6 +71,13 @@ async function loadOptions(yargs: any) {
             type: 'string',
             description: 'Index ID',
             demandOption: true,
+        })
+        .option('type', {
+            alias: 't',
+            type: 'string',
+            description: 'Type of IIIF specification',
+            choices: ['Manifest', 'Collection', 'AnnotationPage', 'AnnotationCollection'], 
+            default: 'Manifest',
         })
         .option('uri', {
             alias: 'u',

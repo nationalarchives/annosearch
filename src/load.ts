@@ -13,6 +13,10 @@ async function processAnnotationPage(annotationPageUrl: string) {
 async function processManifest(manifestUrl: string) {
     const jsonData = await fetchJson(manifestUrl);
     const parser = new Maniiifest(jsonData);
+    const type = parser.getSpecificationType();
+    if (type !== 'Manifest') {
+        throw new Error(`Specification should be a Manifest.`);
+    }
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
         await processAnnotationPage(page.id);
@@ -22,6 +26,10 @@ async function processManifest(manifestUrl: string) {
 async function processCollection(collectionUrl: string) {
     const jsonData = await fetchJson(collectionUrl);
     const parser = new Maniiifest(jsonData);
+    const type = parser.getSpecificationType();
+    if (type !== 'Collection') {
+        throw new Error(`Specification should be a Collection.`);
+    }
     const manifests = parser.iterateCollectionManifest();
     let count = 0;
     for (const item of manifests) {
@@ -37,7 +45,16 @@ async function processCollection(collectionUrl: string) {
     }
 }
 
-export async function loadIndex(indexId: string, uri: string) {
+export async function loadIndex(indexId: string, uri: string, type: string) {
     console.log(indexId, uri);
-    processCollection(uri);
+    switch (type) {
+        case 'Manifest':
+            await processManifest(uri);
+            break;
+        case 'Collection':
+            await processCollection(uri);
+            break;
+        default:
+            throw new Error(`Unsupported type: ${type}`);
+    }
 }
