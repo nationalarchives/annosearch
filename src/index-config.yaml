@@ -5,12 +5,9 @@ doc_mapping:
   field_mappings:
     - name: body
       type: object
-      stored: true
       field_mappings:
         - name: value
           type: text
-          record: position
-          stored: true
 
 search_settings:
   default_search_fields: 
