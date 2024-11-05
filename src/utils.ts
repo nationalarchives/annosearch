@@ -1,4 +1,5 @@
-// FILE: utils.ts
+import axios from 'axios';
+import https from 'https';
 
 // Function to print the results
 export function printJson(results: unknown): void {
@@ -17,11 +18,8 @@ export function handleError(error: unknown): void {
 // Function to fetch JSON data
 export async function fetchJson(url: string) {
     try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return await response.json();
+        const response = await axios.get(url);
+        return response.data;
     } catch (error) {
         handleError(error);
         throw error; // Re-throw the error after handling it

@@ -2,12 +2,25 @@ import { Maniiifest } from 'maniiifest';
 import { fetchJson, printJson } from './utils';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 
+
 async function processAnnotations(parser: any) {
-    const annotations = parser.iterateAnnotationPageAnnotation();
-    for (const annotation of annotations) {
-        printJson(annotation);
+    let currentParser = parser;
+
+    while (currentParser) {
+        const annotations = currentParser.iterateAnnotationPageAnnotation();
+        for (const annotation of annotations) {
+            printJson(annotation);
+        }
+        const nextPageUrl = currentParser.getAnnotationPage().next;
+        if (nextPageUrl) {
+            const jsonData = await fetchJson(nextPageUrl);
+            currentParser = new Maniiifest(jsonData, "AnnotationPage");
+        } else {
+            currentParser = null;
+        }
     }
 }
+
 
 async function processAnnotationPageRef(annotationPageUrl: string) {
     const jsonData = await fetchJson(annotationPageUrl);
