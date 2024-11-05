@@ -3,7 +3,7 @@ import express from 'express';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
-import { printResults, handleError } from './utils';
+import { printJson, handleError } from './utils';
 
 const client = new AnnoSearch();
 
@@ -33,7 +33,7 @@ async function searchCommand(argv: any) {
     try {
         const offset = argv.page * client.getMaxHits();
         const results = await client.searchIndex(argv.index as string, argv.query as string, offset as number);
-        printResults(results);
+        printJson(results);
     } catch (error) {
         handleError(error);
     }

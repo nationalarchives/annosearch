@@ -1,7 +1,7 @@
 // FILE: utils.ts
 
 // Function to print the results
-export function printResults(results: unknown): void {
+export function printJson(results: unknown): void {
     console.log(JSON.stringify(results, null, 2)); // Print the returned JSON
 }
 
@@ -11,5 +11,19 @@ export function handleError(error: unknown): void {
         console.error('Error performing search:', error.message);
     } else {
         console.error('Error performing search:', error);
+    }
+}
+
+// Function to fetch JSON data
+export async function fetchJson(url: string) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (error) {
+        handleError(error);
+        throw error; // Re-throw the error after handling it
     }
 }
