@@ -58,6 +58,7 @@ async function processCollection(collectionUrl: string) {
         throw new Error(`Specification should be a Collection.`);
     }
     const manifests = parser.iterateCollectionManifest();
+    // need to remove count later once tested
     let count = 0;
     for (const item of manifests) {
         if (count >= 1) break;
