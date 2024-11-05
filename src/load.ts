@@ -1,10 +1,10 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, printJson } from './utils';
+import { fetchJson, createJsonl } from './utils';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createAxiosInstance } from './quickwit';
 
 
-const contentType = 'application/json';
+const contentType = 'application/x-ndjson';
 const axiosInstance = createAxiosInstance(contentType);
 
 async function processAnnotations(indexId: string, parser: any) {
@@ -13,10 +13,9 @@ async function processAnnotations(indexId: string, parser: any) {
     while (currentParser) {
         const annotations = currentParser.iterateAnnotationPageAnnotation();
         for (const annotation of annotations) {
-            printJson(annotation);
-            // Send the annotation to Quickwit
+            const jsonl = createJsonl(annotation);
             try {
-                const response = await axiosInstance.post(`${indexId}/ingest?commit=force`, annotation);
+                const response = await axiosInstance.post(`${indexId}/ingest?commit=force`, jsonl);
                 console.log(response.data);
             } catch (error: any) {
                 console.error('Error sending annotation to Quickwit:', error.message);

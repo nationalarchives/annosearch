@@ -25,3 +25,7 @@ export async function fetchJson(url: string) {
         throw error; // Re-throw the error after handling it
     }
 }
+
+export function createJsonl(data: unknown): string {
+    return JSON.stringify(data) + '\n';
+}
