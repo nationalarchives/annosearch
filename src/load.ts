@@ -1,15 +1,26 @@
 import { Maniiifest } from 'maniiifest';
 import { fetchJson, printJson } from './utils';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
+import { createAxiosInstance } from './quickwit';
 
 
-async function processAnnotations(parser: any) {
+const contentType = 'application/json';
+const axiosInstance = createAxiosInstance(contentType);
+
+async function processAnnotations(indexId: string, parser: any) {
     let currentParser = parser;
 
     while (currentParser) {
         const annotations = currentParser.iterateAnnotationPageAnnotation();
         for (const annotation of annotations) {
             printJson(annotation);
+            // Send the annotation to Quickwit
+            try {
+                const response = await axiosInstance.post(`${indexId}/ingest?commit=force`, annotation);
+                console.log(response.data);
+            } catch (error: any) {
+                console.error('Error sending annotation to Quickwit:', error.message);
+            }
         }
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
@@ -22,18 +33,18 @@ async function processAnnotations(parser: any) {
 }
 
 
-async function processAnnotationPageRef(annotationPageUrl: string) {
+async function processAnnotationPageRef(indexId: string, annotationPageUrl: string) {
     const jsonData = await fetchJson(annotationPageUrl);
     const parser = new Maniiifest(jsonData, "AnnotationPage");
-    await processAnnotations(parser);
+    await processAnnotations(indexId, parser);
 }
 
-async function processAnnotationPage(page: AnnotationPageT) {
+async function processAnnotationPage(indexId: string, page: AnnotationPageT) {
     const parser = new Maniiifest(page, "AnnotationPage");
-    await processAnnotations(parser);
+    await processAnnotations(indexId, parser);
 }
 
-async function processManifest(manifestUrl: string) {
+async function processManifest(indexId: string, manifestUrl: string) {
     const jsonData = await fetchJson(manifestUrl);
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
@@ -43,14 +54,14 @@ async function processManifest(manifestUrl: string) {
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
         if (page.items) {
-            await processAnnotationPage(page);
+            await processAnnotationPage(indexId, page);
         } else {
-            await processAnnotationPageRef(page.id);
+            await processAnnotationPageRef(indexId, page.id);
         }
     }
 }
 
-async function processCollection(collectionUrl: string) {
+async function processCollection(indexId: string, collectionUrl: string) {
     const jsonData = await fetchJson(collectionUrl);
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
@@ -65,7 +76,7 @@ async function processCollection(collectionUrl: string) {
         const manifestRef = new Maniiifest(item);
         const manifestId = manifestRef.getManifestId();
         if (manifestId) {
-            await processManifest(manifestId);
+            await processManifest(indexId, manifestId);
         } else {
             console.error('Manifest ID is null');
         }
@@ -76,10 +87,10 @@ async function processCollection(collectionUrl: string) {
 export async function loadIndex(indexId: string, uri: string, type: string) {
     switch (type) {
         case 'Manifest':
-            await processManifest(uri);
+            await processManifest(indexId, uri);
             break;
         case 'Collection':
-            await processCollection(uri);
+            await processCollection(indexId, uri);
             break;
         default:
             throw new Error(`Unsupported type: ${type}`);
