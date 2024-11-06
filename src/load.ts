@@ -1,8 +1,7 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl } from './utils';
+import { fetchJson, createJsonl, handleError } from './utils';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
-
 
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
@@ -18,7 +17,7 @@ async function processAnnotations(indexId: string, parser: any) {
                 const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, jsonl);
                 console.log(response.data);
             } catch (error: any) {
-                console.error('Error sending annotation to Quickwit:', error.message);
+                handleError(error); // Use handleError from utils
             }
         }
         const nextPageUrl = currentParser.getAnnotationPage().next;
@@ -30,7 +29,6 @@ async function processAnnotations(indexId: string, parser: any) {
         }
     }
 }
-
 
 async function processAnnotationPageRef(indexId: string, annotationPageUrl: string) {
     const jsonData = await fetchJson(annotationPageUrl);
@@ -77,21 +75,25 @@ async function processCollection(indexId: string, collectionUrl: string) {
         if (manifestId) {
             await processManifest(indexId, manifestId);
         } else {
-            console.error('Manifest ID is null');
+            handleError(new Error('Manifest ID is null'));
         }
         count++;
     }
 }
 
 export async function loadIndex(indexId: string, uri: string, type: string) {
-    switch (type) {
-        case 'Manifest':
-            await processManifest(indexId, uri);
-            break;
-        case 'Collection':
-            await processCollection(indexId, uri);
-            break;
-        default:
-            throw new Error(`Unsupported type: ${type}`);
+    try {
+        switch (type) {
+            case 'Manifest':
+                await processManifest(indexId, uri);
+                break;
+            case 'Collection':
+                await processCollection(indexId, uri);
+                break;
+            default:
+                throw new Error(`Unsupported type: ${type}`);
+        }
+    } catch (error) {
+        handleError(error);
     }
 }
