@@ -36,7 +36,7 @@ export function handleError(error: any): never {
             throw new AnnoSearchError(`Unexpected status code (${statusCode}): ${error.response.statusText}`);
         }
     } else {
-        throw new AnnoSearchError('An error occurred during processing: No response from server');
+        throw new AnnoSearchError('An error occurred during processing');
     }
 }
 
