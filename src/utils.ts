@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AnnoSearchError } from './errors';
+import { AnnoSearchError, AnnoSearchNetworkError } from './errors';
 
 // Function to print the results
 export function printJson(results: unknown): void {
@@ -24,7 +24,7 @@ export async function fetchJson(url: string) {
         return response.data;
     } catch (error) {
         handleError(error);
-        throw error; // Re-throw the error after handling it
+        throw new AnnoSearchNetworkError('An error occurred during JSON fetch processing');
     }
 }
 

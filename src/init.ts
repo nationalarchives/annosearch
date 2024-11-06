@@ -3,6 +3,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { handleError } from './utils';
 import { createClient } from './quickwit';
+import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError } from './errors';
 
 const contentType = 'application/yaml'; 
 const quickwitClient = createClient(contentType);
@@ -19,23 +20,34 @@ function modifyConfig(config: any, indexId: string) {
     return yaml.stringify(config);
 }
 
-// Function to post the modified configuration to the server
-async function postIndexConfig(data: string) {
-    return await quickwitClient.post('indexes', data);
-}
 
 // Initialization function
 export async function initIndex(indexId: string) {
+    if (!indexId.trim()) {
+        throw new AnnoSearchValidationError('Invalid indexId parameter');
+    }
     const filePath = path.resolve(__dirname, 'index-config.yaml');
-
     try {
-        // Read and modify configuration
         const config = readYamlConfig(filePath);
         const modifiedYamlData = modifyConfig(config, indexId);
-        // Post configuration to the server
-        const response = await postIndexConfig(modifiedYamlData);
+        const response = await quickwitClient.post('indexes', modifiedYamlData);
+        if (!response.data) {
+            throw new AnnoSearchValidationError('No response data received from Quickwit');
+        }
         console.log('Response:', response.data);
-    } catch (error) {
+    } catch (error: any) {
         handleError(error);
+        if (error.response) {
+            const statusCode = error.response.status;
+            if (statusCode >= 500) {
+                throw new AnnoSearchNetworkError(`Server error (${statusCode})`);
+            } else if (statusCode >= 400) {
+                throw new AnnoSearchNetworkError(`Client error (${statusCode})`);
+            } else {
+                throw new AnnoSearchError(`Unexpected error with status code ${statusCode}`);
+            }
+        } else {
+            throw new AnnoSearchNetworkError('An error occurred during ingest processing');
+        }
     }
 }
