@@ -1,5 +1,6 @@
 import { Maniiifest } from 'maniiifest';
 import { fetchJson, createJsonl, handleError } from './utils';
+import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
 
@@ -46,7 +47,7 @@ async function processManifest(indexId: string, manifestUrl: string) {
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
     if (type !== 'Manifest') {
-        throw new Error(`Specification should be a Manifest.`);
+        throw new AnnoSearchParseError('Specification should be a Manifest');
     }
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
@@ -63,7 +64,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
     if (type !== 'Collection') {
-        throw new Error(`Specification should be a Collection.`);
+        throw new AnnoSearchParseError('Specification should be a Collection');
     }
     const manifests = parser.iterateCollectionManifest();
     // need to remove count later once tested
@@ -75,7 +76,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
         if (manifestId) {
             await processManifest(indexId, manifestId);
         } else {
-            handleError(new Error('Manifest ID is null'));
+            throw new AnnoSearchValidationError('Manifest ID is null');
         }
         count++;
     }
@@ -91,7 +92,7 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
                 await processCollection(indexId, uri);
                 break;
             default:
-                throw new Error(`Unsupported type: ${type}`);
+                throw new AnnoSearchValidationError('unsupported type');
         }
     } catch (error) {
         handleError(error);

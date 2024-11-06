@@ -1,5 +1,5 @@
 import axios from 'axios';
-import https from 'https';
+import { AnnoSearchError } from './errors';
 
 // Function to print the results
 export function printJson(results: unknown): void {
@@ -7,11 +7,13 @@ export function printJson(results: unknown): void {
 }
 
 // Function to handle errors
-export function handleError(error: unknown): void {
-    if (error instanceof Error) {
-        console.error('Error performing search:', error.message);
+export function handleError(error: unknown, context: string = 'General') {
+    if (error instanceof AnnoSearchError) {
+        console.error(`AnnoSearch Error [${context}]: ${error.message} (Status: ${error.statusCode})`);
+    } else if (error instanceof Error) {
+        console.error(`General Error [${context}]: ${error.message}`);
     } else {
-        console.error('Error performing search:', error);
+        console.error(`Unknown Error [${context}]:`, error);
     }
 }
 
