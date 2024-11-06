@@ -22,9 +22,20 @@ export async function fetchJson(url: string) {
     try {
         const response = await axios.get(url);
         return response.data;
-    } catch (error) {
+    } catch (error: any) {
         handleError(error);
-        throw new AnnoSearchNetworkError('An error occurred during JSON fetch processing');
+        if (error.response) {
+            const statusCode = error.response.status;
+            if (statusCode >= 500) {
+                throw new AnnoSearchNetworkError(`Server error (${statusCode})`);
+            } else if (statusCode >= 400) {
+                throw new AnnoSearchNetworkError(`Client error (${statusCode})`);
+            } else {
+                throw new AnnoSearchError(`Unexpected error with status code ${statusCode}`);
+            }
+        } else {
+            throw new AnnoSearchNetworkError('An error occurred during ingest processing');
+        }
     }
 }
 
