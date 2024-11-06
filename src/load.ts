@@ -1,6 +1,6 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl, handleError, printJson } from './utils';
-import { AnnoSearchError, AnnoSearchParseError, AnnoSearchValidationError, AnnoSearchNetworkError } from './errors';
+import { fetchJson, createJsonl, printJson, handleError } from './utils';
+import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
 
@@ -26,20 +26,7 @@ async function processAnnotations(indexId: string, parser: any) {
                 printJson(response.data);
 
             } catch (error: any) {
-                if (error.response) {
-                    handleError(error); 
-                    const statusCode = error.response.status;
-                    if (statusCode >= 500) {
-                        throw new AnnoSearchNetworkError(`Server error (${statusCode})`);
-                    } else if (statusCode >= 400) {
-                        throw new AnnoSearchNetworkError(`Client error (${statusCode})`);
-                    } else {
-                        throw new AnnoSearchError(`Unexpected error with status code ${statusCode}`);
-                    }
-                } else {
-                    handleError(error); 
-                    throw new AnnoSearchNetworkError('An error occurred during ingest processing');
-                }
+                handleError(error);
             }
         }
 
@@ -53,7 +40,6 @@ async function processAnnotations(indexId: string, parser: any) {
                 currentParser = new Maniiifest(jsonData, "AnnotationPage");
 
             } catch (error: any) {
-                handleError(error);
                 throw new AnnoSearchParseError('Failed to retrieve or parse the next annotation page');
             }
         } else {
@@ -69,8 +55,7 @@ async function processAnnotationPageRef(indexId: string, annotationPageUrl: stri
         const parser = new Maniiifest(jsonData, "AnnotationPage");
         await processAnnotations(indexId, parser);
     } catch (error: any) {
-        handleError(error); // Log the error
-        throw new AnnoSearchParseError('An error occurred during annotation page reference processing');
+        handleError(error);
     }
 }
 
@@ -79,8 +64,7 @@ async function processAnnotationPage(indexId: string, page: AnnotationPageT) {
         const parser = new Maniiifest(page, "AnnotationPage");
         await processAnnotations(indexId, parser);
     } catch (error: any) {
-        handleError(error); // Log the error
-        throw new AnnoSearchParseError('An error occurred during annotation page processing');
+        handleError(error);
     }
 }
 
@@ -101,8 +85,7 @@ async function processManifest(indexId: string, manifestUrl: string) {
             }
         }
     } catch (error: any) {
-        handleError(error); // Log the error
-        throw new AnnoSearchError('An error occurred during manifest processing');
+        handleError(error);
     }
 }
 
@@ -129,8 +112,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
             count++;
         }
     } catch (error: any) {
-        handleError(error); // Log the error
-        throw new AnnoSearchError('An error occurred during collection processing');
+        handleError(error);
     }
 }
 
@@ -152,6 +134,5 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
         }
     } catch (error: any) {
         handleError(error);
-        throw new AnnoSearchError('An error occurred during load processing');
     }
 }

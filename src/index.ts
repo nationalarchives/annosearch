@@ -3,7 +3,7 @@ import express from 'express';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
-import { printJson, handleError } from './utils';
+import { printJson, logError } from './utils';
 
 const client = new AnnoSearch();
 
@@ -35,7 +35,7 @@ async function searchCommand(argv: any) {
         const results = await client.searchIndex(argv.index as string, argv.query as string, offset as number);
         printJson(results);
     } catch (error) {
-        handleError(error);
+        logError(error);
     }
 }
 
@@ -43,7 +43,7 @@ async function initCommand(argv: any) {
     try {
         await client.initIndex(argv.index as string);
     } catch (error) {
-        handleError(error);
+        logError(error);
     }
 }
 
@@ -60,7 +60,7 @@ async function loadCommand(argv: any) {
     try {
         await client.loadIndex(argv.index as string, argv.uri as string, argv.type as string);
     } catch (error) {
-        handleError(error);
+        logError(error);
     }
 }
 
@@ -91,7 +91,7 @@ async function deleteCommand(argv: any) {
     try {
         await client.deleteIndex(argv.index as string);
     } catch (error) {
-        handleError(error);
+        logError(error);
     }
 }
 
@@ -173,7 +173,7 @@ async function main() {
             .showHelpOnFail(true)
             .parseAsync();
     } catch (error) {
-        handleError(error);
+        logError(error);
     }
 }
 
