@@ -45,21 +45,12 @@ export function handleError(error: any): never {
 export async function fetchJson(url: string) {
     try {
         const response = await axios.get(url);
+        if (!response.data) {
+            throw new AnnoSearchValidationError('No JSON data returned');
+        }
         return response.data;
     } catch (error: any) {
-        logError(error);
-        if (error.response) {
-            const statusCode = error.response.status;
-            if (statusCode >= 500) {
-                throw new AnnoSearchNetworkError(`Server error (${statusCode})`);
-            } else if (statusCode >= 400) {
-                throw new AnnoSearchNetworkError(`Client error (${statusCode})`);
-            } else {
-                throw new AnnoSearchError(`Unexpected error with status code ${statusCode}`);
-            }
-        } else {
-            throw new AnnoSearchNetworkError('An error occurred during ingest processing');
-        }
+        handleError(error);
     }
 }
 
