@@ -102,7 +102,7 @@ async function processManifest(indexId: string, manifestUrl: string) {
         }
     } catch (error: any) {
         handleError(error); // Log the error
-        throw new AnnoSearchError('An error occurred during manifest processing', error);
+        throw new AnnoSearchError('An error occurred during manifest processing');
     }
 }
 
@@ -130,7 +130,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
         }
     } catch (error: any) {
         handleError(error); // Log the error
-        throw new AnnoSearchError('An error occurred during collection processing', error);
+        throw new AnnoSearchError('An error occurred during collection processing');
     }
 }
 
@@ -152,6 +152,6 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
         }
     } catch (error: any) {
         handleError(error);
-        throw new AnnoSearchError('An error occurred during load processing', error);
+        throw new AnnoSearchError('An error occurred during load processing');
     }
 }

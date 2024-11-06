@@ -9,7 +9,7 @@ export function printJson(results: unknown): void {
 // Function to handle errors
 export function handleError(error: unknown, context: string = 'General') {
     if (error instanceof AnnoSearchError) {
-        console.error(`AnnoSearch Error [${context}]: ${error.message} (Status: ${error.statusCode})`);
+        console.error(`AnnoSearch Error [${context}]: ${error.message}`);
     } else if (error instanceof Error) {
         console.error(`General Error [${context}]: ${error.message}`);
     } else {
