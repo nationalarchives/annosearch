@@ -25,18 +25,18 @@ export function logError(error: unknown, context: string = 'General') {
 
 // Function to handle errors
 export function handleError(error: any): never {
-    logError(error);
-    if (error.response) {
-        const statusCode = error.response.status;
+    logError(error);  // Logs error details
+    const statusCode = error.response?.status;
+    if (statusCode) {
         if (statusCode >= 500) {
-            throw new AnnoSearchNetworkError(`Server error (${statusCode})`);
+            throw new AnnoSearchNetworkError(`Server error (${statusCode}): ${error.response.statusText}`);
         } else if (statusCode >= 400) {
-            throw new AnnoSearchValidationError(`Client error (${statusCode})`);
+            throw new AnnoSearchValidationError(`Client error (${statusCode}): ${error.response.statusText}`);
         } else {
-            throw new AnnoSearchError(`Unexpected error with status code ${statusCode}`);
+            throw new AnnoSearchError(`Unexpected status code (${statusCode}): ${error.response.statusText}`);
         }
     } else {
-        throw new AnnoSearchError('An error occurred during processing');
+        throw new AnnoSearchError('An error occurred during processing: No response from server');
     }
 }
 

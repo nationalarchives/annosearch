@@ -24,7 +24,7 @@ function modifyConfig(config: any, indexId: string) {
 // Initialization function
 export async function initIndex(indexId: string) {
     if (!indexId.trim()) {
-        throw new AnnoSearchValidationError('Invalid indexId parameter');
+        throw new AnnoSearchValidationError('Invalid index parameter');
     }
     const filePath = path.resolve(__dirname, 'index-config.yaml');
     try {

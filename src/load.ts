@@ -119,7 +119,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
 
 export async function loadIndex(indexId: string, uri: string, type: string) {
     if (!indexId.trim() || !uri.trim()) {
-        throw new AnnoSearchValidationError('Invalid indexId or uri parameter');
+        throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
     try {
         switch (type) {

@@ -8,7 +8,7 @@ const quickwitClient = createClient(contentType);
 export async function deleteIndex(indexId: string) {
     try {
         if (!indexId.trim()) {
-            throw new AnnoSearchValidationError('Invalid indexId: indexId cannot be empty or whitespace.');
+            throw new AnnoSearchValidationError('Invalid index parameter');
         }
         const response = await quickwitClient.delete(`indexes/${indexId}`);
         if (!response.data) {
