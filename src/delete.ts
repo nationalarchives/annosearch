@@ -1,12 +1,12 @@
 import { handleError } from './utils';
-import { createAxiosInstance } from './quickwit';
+import { createClient } from './quickwit';
 
 const contentType = 'application/json'; 
-const axiosInstance = createAxiosInstance(contentType);
+const quickwitClient = createClient(contentType);
 
 export async function deleteIndex(indexId: string) {
     try {
-        const response = await axiosInstance.delete(`indexes/${indexId}`);
+        const response = await quickwitClient.delete(`indexes/${indexId}`);
         console.log('Response:', response.data);
     } catch (error) {
         handleError(error);

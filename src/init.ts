@@ -2,10 +2,10 @@ import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
 import { handleError } from './utils';
-import { createAxiosInstance } from './quickwit';
+import { createClient } from './quickwit';
 
 const contentType = 'application/yaml'; 
-const axiosInstance = createAxiosInstance(contentType);
+const quickwitClient = createClient(contentType);
 
 // Function to read YAML configuration file
 function readYamlConfig(filePath: string) {
@@ -21,7 +21,7 @@ function modifyConfig(config: any, indexId: string) {
 
 // Function to post the modified configuration to the server
 async function postIndexConfig(data: string) {
-    return await axiosInstance.post('indexes', data);
+    return await quickwitClient.post('indexes', data);
 }
 
 // Initialization function

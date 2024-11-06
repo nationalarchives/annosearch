@@ -1,14 +1,14 @@
 import { handleError } from './utils';
-import { createAxiosInstance } from './quickwit';
+import { createClient } from './quickwit';
 
 const contentType = 'application/json';
-const axiosInstance = createAxiosInstance(contentType);
+const quickwitClient = createClient(contentType);
 
 export async function searchIndex(indexId: string, query: string, maxHits: number, startOffset: number) {
     try {
         console.log(`Sending request to Quickwit with indexId: ${indexId}, query: ${query}, and maxHits: ${maxHits} at offset: ${startOffset}`);
 
-        const response = await axiosInstance.post(`${indexId}/search`, {
+        const response = await quickwitClient.post(`${indexId}/search`, {
             query: query,
             max_hits: maxHits,
             start_offset: startOffset,
