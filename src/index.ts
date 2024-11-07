@@ -77,7 +77,7 @@ async function loadOptions(yargs: any) {
             alias: 't',
             type: 'string',
             description: 'Type of IIIF specification',
-            choices: ['Manifest', 'Collection', 'AnnotationPage', 'AnnotationCollection'], 
+            choices: ['Manifest', 'Collection', 'AnnotationPage', 'AnnotationCollection'],
             default: 'Manifest',
         })
         .option('uri', {
@@ -111,19 +111,15 @@ async function serveOptions(yargs: any) {
         description: 'Port to run the server on',
         default: client.getPort(),
     })
-    .option('host', {
-        type: 'string',
-        description: 'Host to run the server on',
-        default: client.getHost(),
-    });
+        .option('host', {
+            type: 'string',
+            description: 'Host to run the server on',
+            default: client.getHost(),
+        });
 }
 
 async function serveCommand(argv: any) {
-    try {
-        await serve(argv);
-    } catch (error) {
-        logError(error);
-    }
+    serve(argv);
 }
 
 async function versionOptions(yargs: any) { }
