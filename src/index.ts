@@ -1,9 +1,10 @@
 import yargs from 'yargs';
-import express from 'express';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
-import { version } from '../package.json'; // Import version from package.json
+import { serve } from './server';
 import { printJson, logError } from './utils';
+import { version } from '../package.json'; // Import version from package.json
+
 
 const client = new AnnoSearch();
 
@@ -104,37 +105,6 @@ async function deleteOptions(yargs: any) {
     });
 }
 
-async function serveCommand(argv: any) {
-    const app = express();
-
-    const port = argv.port;
-    const host = argv.host;
-
-    app.get('/:index/search', async (req, res) => {
-        const { index } = req.params;
-        const { q, page } = req.query;
-
-        const pageNumber = parseInt(page as string) || 0;
-        const offset = pageNumber * client.getMaxHits();
-
-        try {
-            const results = await client.searchIndex(index as string, q as string, offset);
-            res.json(results);
-        } catch (error) {
-            const errorMessage = (error as Error).message;
-            res.status(500).json({ error: errorMessage });
-        }
-    });
-
-    app.get('/version', async (req, res) => {
-        res.json({ version });
-    });
-
-    app.listen(port, () => {
-        console.log(`Server is running on ${host}:${port}`);
-    });
-}
-
 async function serveOptions(yargs: any) {
     return yargs.option('port', {
         type: 'number',
@@ -146,6 +116,14 @@ async function serveOptions(yargs: any) {
         description: 'Host to run the server on',
         default: client.getHost(),
     });
+}
+
+async function serveCommand(argv: any) {
+    try {
+        await serve(argv);
+    } catch (error) {
+        logError(error);
+    }
 }
 
 async function versionOptions(yargs: any) { }
