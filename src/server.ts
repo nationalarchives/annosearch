@@ -3,6 +3,7 @@
 import express from 'express';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
+import { handleWebError } from './utils';
 
 const client = new AnnoSearch();
 
@@ -22,9 +23,8 @@ export async function serve(argv: any) {
         try {
             const results = await client.searchIndex(index as string, q as string, offset);
             res.json(results);
-        } catch (error) {
-            const errorMessage = (error as Error).message;
-            res.status(500).json({ error: errorMessage });
+        } catch (error: any) {
+            handleWebError(error, res);
         }
     });
 

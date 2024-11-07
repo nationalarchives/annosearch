@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { Response } from 'express';
 import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError, AnnoSearchParseError } from './errors';
 
 // Function to print the results
@@ -25,19 +26,43 @@ export function logError(error: unknown, context: string = 'General') {
 
 // Function to handle errors
 export function handleError(error: any): never {
-    logError(error);  // Logs error details
-    const statusCode = error.response?.status;
-    if (statusCode) {
-        if (statusCode >= 500) {
-            throw new AnnoSearchNetworkError(`Server error (${statusCode}): ${error.response.statusText}`);
-        } else if (statusCode >= 400) {
-            throw new AnnoSearchValidationError(`Client error (${statusCode}): ${error.response.statusText}`);
-        } else {
-            throw new AnnoSearchError(`Unexpected status code (${statusCode}): ${error.response.statusText}`);
-        }
-    } else {
-        throw new AnnoSearchError('An error occurred during processing');
+    logError(error);  
+    throw error;      
+}
+
+
+export function handleWebError(error: any, res: Response): void {
+    let statusCode = 500;
+    let errorMessage = 'An error occurred during processing';
+
+    switch (true) {
+        case error instanceof AnnoSearchValidationError:
+            statusCode = 400;
+            errorMessage = `Validation error: ${error.message}`;
+            break;
+        case error instanceof AnnoSearchNetworkError:
+            statusCode = 502;
+            errorMessage = `Network error: ${error.message}`;
+            break;
+        case error instanceof AnnoSearchParseError:
+            statusCode = 500;
+            errorMessage = `Parse error: ${error.message}`;
+            break;    
+        case error instanceof AnnoSearchError:
+            statusCode = 500;
+            errorMessage = `Application error: ${error.message}`;
+            break;
+        default:
+            if (error.response) {
+                statusCode = error.response.status || 500;
+                errorMessage = error.response.statusText || error.message;
+            } else {
+                errorMessage = error.message || 'Internal Server Error';
+            }
+            break;
     }
+
+    res.status(statusCode).json({ error: errorMessage });
 }
 
 
