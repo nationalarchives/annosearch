@@ -7,7 +7,6 @@ const quickwitClient = createClient(contentType);
 
 export async function searchIndex(indexId: string, query: string, maxHits: number, startOffset: number) {
     try {
-        console.log(`Sending request to Quickwit with indexId: ${indexId}, query: ${query}, and maxHits: ${maxHits} at offset: ${startOffset}`);
         if (!indexId.trim() || !query.trim()) {
             throw new AnnoSearchValidationError('Invalid index or query parameter');
         }

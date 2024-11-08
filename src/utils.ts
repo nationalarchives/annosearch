@@ -1,29 +1,39 @@
 import axios from 'axios';
 import { Response } from 'express';
-import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError, AnnoSearchParseError } from './errors';
+import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError, AnnoSearchParseError, AnnoSearchNotFoundError } from './errors';
 import { AxiosError } from 'axios';
+import logger from './logger'; // Import Pino logger instance
+
 
 // Function to print the results
 export function printJson(results: unknown): void {
     console.log(JSON.stringify(results, null, 2)); // Print the returned JSON
 }
 
-// Function to log errors
-export function logError(error: unknown, context: string = 'General') {
+// Function to log errors in a single-line JSON format
+export function logError(error: unknown, context: string = 'General'): void {
+    const errorObject = { context, error: {} };
+
     if (error instanceof AnnoSearchNetworkError || error instanceof AxiosError) {
-        console.error(`AnnoSearch Network Error [${context}]: ${error.message}`);
+        errorObject.error = { type: 'Network Error', message: error.message };
+    } else if (error instanceof AnnoSearchNotFoundError) {
+        errorObject.error = { type: 'Not Found Error', message: error.message };
     } else if (error instanceof AnnoSearchParseError) {
-        console.error(`AnnoSearch Parse Error [${context}]: ${error.message}`);
+        errorObject.error = { type: 'Parse Error', message: error.message };
     } else if (error instanceof AnnoSearchValidationError) {
-        console.error(`AnnoSearch Validation Error [${context}]: ${error.message}`);
+        errorObject.error = { type: 'Validation Error', message: error.message };
     } else if (error instanceof AnnoSearchError) {
-        console.error(`AnnoSearch Error [${context}]: ${error.message}`);
+        errorObject.error = { type: 'General AnnoSearch Error', message: error.message };
     } else if (error instanceof Error) {
-        console.error(`General Error [${context}]: ${error.message}`);
+        errorObject.error = { type: 'General Error', message: error.message };
     } else {
-        console.error(`Unknown Error [${context}]:`, error);
+        errorObject.error = { type: 'Unknown Error', details: JSON.stringify(error) };
     }
+
+    logger.error(JSON.stringify(errorObject)); // Log as a single-line JSON object
 }
+
+
 
 // Function to handle errors
 export function handleError(error: any): never {
@@ -32,6 +42,7 @@ export function handleError(error: any): never {
 }
 
 export function handleWebError(error: any, res: Response): void {
+    logError(error, 'Web Request');
     let statusCode = 500;
     let errorMessage = 'An error occurred during processing';
 
@@ -40,9 +51,17 @@ export function handleWebError(error: any, res: Response): void {
             statusCode = 400;
             errorMessage = `Validation error: ${error.message}`;
             break;
-        case error instanceof AnnoSearchNetworkError || error instanceof AxiosError:
+        case error instanceof AxiosError:
+            statusCode = error.response?.status || 503;
+            errorMessage = `Network error: ${error.message}`;
+            break;
+        case error instanceof AnnoSearchNetworkError:
             statusCode = 503;
             errorMessage = `Network error: ${error.message}`;
+            break;
+        case error instanceof AnnoSearchNotFoundError:
+            statusCode = 404;
+            errorMessage = `Not found: ${error.message}`;
             break;
         case error instanceof AnnoSearchParseError:
             statusCode = 400;

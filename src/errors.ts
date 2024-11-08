@@ -20,6 +20,12 @@ export class AnnoSearchNetworkError extends AnnoSearchError {
     }
 }
 
+export class AnnoSearchNotFoundError extends AnnoSearchError {
+    constructor(message = 'Resource not found') {
+        super(message);
+    }
+}
+
 export class AnnoSearchParseError extends AnnoSearchError {
     constructor(message = 'Error parsing data') {
         super(message);
