@@ -1,5 +1,5 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl, printJson, handleError } from './utils';
+import { fetchJson, createJsonl, printJson } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
@@ -12,36 +12,26 @@ async function processAnnotations(indexId: string, parser: any) {
 
     while (currentParser) {
         const annotations = currentParser.iterateAnnotationPageAnnotation();
-
         for (const annotation of annotations) {
             const jsonl = createJsonl(annotation);
             if (!jsonl) {
                 throw new AnnoSearchValidationError('Invalid annotation data generated from JSONL conversion');
             }
-            try {
-                const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, jsonl);
-                if (!response.data) {
-                    throw new AnnoSearchValidationError('No response data received from Quickwit');
-                }
-                printJson(response.data);
-
-            } catch (error: any) {
-                handleError(error);
+            const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, jsonl);
+            if (!response.data) {
+                throw new AnnoSearchValidationError('No response data received from Quickwit');
             }
-        }
+            printJson(response.data);
 
+        }
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
-            try {
-                const jsonData = await fetchJson(nextPageUrl);
-                if (!jsonData) {
-                    throw new AnnoSearchValidationError('No JSON data returned from fetchJson');
-                }
-                currentParser = new Maniiifest(jsonData, "AnnotationPage");
-
-            } catch (error: any) {
-                throw new AnnoSearchParseError('Failed to retrieve or parse the next annotation page');
+            const jsonData = await fetchJson(nextPageUrl);
+            if (!jsonData) {
+                throw new AnnoSearchValidationError('No JSON data returned from fetchJson');
             }
+            currentParser = new Maniiifest(jsonData, "AnnotationPage");
+
         } else {
             currentParser = null;
         }
@@ -50,69 +40,53 @@ async function processAnnotations(indexId: string, parser: any) {
 
 
 async function processAnnotationPageRef(indexId: string, annotationPageUrl: string) {
-    try {
-        const jsonData = await fetchJson(annotationPageUrl);
-        const parser = new Maniiifest(jsonData, "AnnotationPage");
-        await processAnnotations(indexId, parser);
-    } catch (error: any) {
-        handleError(error);
-    }
+    const jsonData = await fetchJson(annotationPageUrl);
+    const parser = new Maniiifest(jsonData, "AnnotationPage");
+    await processAnnotations(indexId, parser);
 }
 
 async function processAnnotationPage(indexId: string, page: AnnotationPageT) {
-    try {
-        const parser = new Maniiifest(page, "AnnotationPage");
-        await processAnnotations(indexId, parser);
-    } catch (error: any) {
-        handleError(error);
-    }
+    const parser = new Maniiifest(page, "AnnotationPage");
+    await processAnnotations(indexId, parser);
 }
 
 async function processManifest(indexId: string, manifestUrl: string) {
-    try {
-        const jsonData = await fetchJson(manifestUrl);
-        const parser = new Maniiifest(jsonData);
-        const type = parser.getSpecificationType();
-        if (type !== 'Manifest') {
-            throw new AnnoSearchParseError('Specification should be a Manifest');
+    const jsonData = await fetchJson(manifestUrl);
+    const parser = new Maniiifest(jsonData);
+    const type = parser.getSpecificationType();
+    if (type !== 'Manifest') {
+        throw new AnnoSearchParseError('Specification should be a Manifest');
+    }
+    const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
+    for (const page of annotationPages) {
+        if (page.items) {
+            await processAnnotationPage(indexId, page);
+        } else {
+            await processAnnotationPageRef(indexId, page.id);
         }
-        const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
-        for (const page of annotationPages) {
-            if (page.items) {
-                await processAnnotationPage(indexId, page);
-            } else {
-                await processAnnotationPageRef(indexId, page.id);
-            }
-        }
-    } catch (error: any) {
-        handleError(error);
     }
 }
 
 async function processCollection(indexId: string, collectionUrl: string) {
-    try {
-        const jsonData = await fetchJson(collectionUrl);
-        const parser = new Maniiifest(jsonData);
-        const type = parser.getSpecificationType();
-        if (type !== 'Collection') {
-            throw new AnnoSearchParseError('Specification should be a Collection');
+    const jsonData = await fetchJson(collectionUrl);
+    const parser = new Maniiifest(jsonData);
+    const type = parser.getSpecificationType();
+    if (type !== 'Collection') {
+        throw new AnnoSearchParseError('Specification should be a Collection');
+    }
+    const manifests = parser.iterateCollectionManifest();
+    // need to remove count later once tested
+    let count = 0;
+    for (const item of manifests) {
+        if (count >= 1) break;
+        const manifestRef = new Maniiifest(item);
+        const manifestId = manifestRef.getManifestId();
+        if (manifestId) {
+            await processManifest(indexId, manifestId);
+        } else {
+            throw new AnnoSearchValidationError('Manifest ID is null');
         }
-        const manifests = parser.iterateCollectionManifest();
-        // need to remove count later once tested
-        let count = 0;
-        for (const item of manifests) {
-            if (count >= 1) break;
-            const manifestRef = new Maniiifest(item);
-            const manifestId = manifestRef.getManifestId();
-            if (manifestId) {
-                await processManifest(indexId, manifestId);
-            } else {
-                throw new AnnoSearchValidationError('Manifest ID is null');
-            }
-            count++;
-        }
-    } catch (error: any) {
-        handleError(error);
+        count++;
     }
 }
 
@@ -121,18 +95,14 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
-    try {
-        switch (type) {
-            case 'Manifest':
-                await processManifest(indexId, uri);
-                break;
-            case 'Collection':
-                await processCollection(indexId, uri);
-                break;
-            default:
-                throw new AnnoSearchValidationError('unsupported type');
-        }
-    } catch (error: any) {
-        handleError(error);
+    switch (type) {
+        case 'Manifest':
+            await processManifest(indexId, uri);
+            break;
+        case 'Collection':
+            await processCollection(indexId, uri);
+            break;
+        default:
+            throw new AnnoSearchValidationError('unsupported type');
     }
 }

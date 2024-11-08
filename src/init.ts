@@ -1,11 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
-import { handleError } from './utils';
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
 
-const contentType = 'application/yaml'; 
+const contentType = 'application/yaml';
 const quickwitClient = createClient(contentType);
 
 // Function to read YAML configuration file
@@ -27,15 +26,12 @@ export async function initIndex(indexId: string) {
         throw new AnnoSearchValidationError('Invalid index parameter');
     }
     const filePath = path.resolve(__dirname, 'index-config.yaml');
-    try {
-        const config = readYamlConfig(filePath);
-        const modifiedYamlData = modifyConfig(config, indexId);
-        const response = await quickwitClient.post('indexes', modifiedYamlData);
-        if (!response.data) {
-            throw new AnnoSearchValidationError('No response data received from Quickwit');
-        }
-        console.log('Response:', response.data);
-    } catch (error: any) {
-        handleError(error);
+    const config = readYamlConfig(filePath);
+    const modifiedYamlData = modifyConfig(config, indexId);
+    const response = await quickwitClient.post('indexes', modifiedYamlData);
+    if (!response.data) {
+        throw new AnnoSearchValidationError('No response data received from Quickwit');
     }
+    console.log('Response:', response.data);
+
 }
