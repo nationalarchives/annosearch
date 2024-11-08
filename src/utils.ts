@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { Response } from 'express';
 import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError, AnnoSearchParseError } from './errors';
+import { AxiosError } from 'axios';
 
 // Function to print the results
 export function printJson(results: unknown): void {
@@ -9,7 +10,7 @@ export function printJson(results: unknown): void {
 
 // Function to log errors
 export function logError(error: unknown, context: string = 'General') {
-    if (error instanceof AnnoSearchNetworkError) {
+    if (error instanceof AnnoSearchNetworkError || error instanceof AxiosError) {
         console.error(`AnnoSearch Network Error [${context}]: ${error.message}`);
     } else if (error instanceof AnnoSearchParseError) {
         console.error(`AnnoSearch Parse Error [${context}]: ${error.message}`);
@@ -26,10 +27,9 @@ export function logError(error: unknown, context: string = 'General') {
 
 // Function to handle errors
 export function handleError(error: any): never {
-    logError(error);  
-    throw error;      
+    logError(error);
+    throw error;
 }
-
 
 export function handleWebError(error: any, res: Response): void {
     let statusCode = 500;
@@ -40,25 +40,20 @@ export function handleWebError(error: any, res: Response): void {
             statusCode = 400;
             errorMessage = `Validation error: ${error.message}`;
             break;
-        case error instanceof AnnoSearchNetworkError:
-            statusCode = 502;
+        case error instanceof AnnoSearchNetworkError || error instanceof AxiosError:
+            statusCode = 503;
             errorMessage = `Network error: ${error.message}`;
             break;
         case error instanceof AnnoSearchParseError:
-            statusCode = 500;
+            statusCode = 400;
             errorMessage = `Parse error: ${error.message}`;
-            break;    
+            break;
         case error instanceof AnnoSearchError:
-            statusCode = 500;
+            statusCode = 400;
             errorMessage = `Application error: ${error.message}`;
             break;
         default:
-            if (error.response) {
-                statusCode = error.response.status || 500;
-                errorMessage = error.response.statusText || error.message;
-            } else {
-                errorMessage = error.message || 'Internal Server Error';
-            }
+            errorMessage = error.message || 'Internal Server Error';
             break;
     }
 
