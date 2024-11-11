@@ -124,7 +124,7 @@ async function serveCommand(yargs: any) {
 async function versionOptions(yargs: any) { }
 
 function versionCommand() {
-    console.log(JSON.stringify({ version }));
+    printJson({ version });
 }
 
 async function main() {

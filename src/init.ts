@@ -3,6 +3,7 @@ import path from 'path';
 import yaml from 'yaml';
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
+import { printJson } from './utils';
 
 const contentType = 'application/yaml';
 const quickwitClient = createClient(contentType);
@@ -32,6 +33,6 @@ export async function initIndex(indexId: string) {
     if (!response.data) {
         throw new AnnoSearchValidationError('No response data received from Quickwit');
     }
-    console.log('Response:', response.data);
+    printJson(response.data);
 
 }
