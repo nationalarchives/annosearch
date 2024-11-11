@@ -71,6 +71,10 @@ export function handleWebError(error: any, res: Response): void {
             statusCode = 400;
             errorMessage = `Application error: ${error.message}`;
             break;
+        case error instanceof Error:
+            statusCode = 500;
+            errorMessage = `General error: ${error.message}`;
+            break;
         default:
             errorMessage = error.message || 'Internal Server Error';
             break;
