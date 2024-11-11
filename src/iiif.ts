@@ -14,14 +14,22 @@ type W3CAnnotation = {
     motivation: string;
 };
 
+type AnnotationCollection = {
+    id: string;
+    type: string;
+    total: number;
+    first: string;
+    last: string;
+};
+
 type SearchResponse = {
     "@context": string;
     id: string;
     type: string;
-    total: number;
     items: W3CAnnotation[];
     next?: string;
     prev?: string;
+    partOf?: AnnotationCollection;
 };
 
 export function makeSearchResponse(data: any, searchUrl: string, query: string, maxHits: number, page: number): SearchResponse {
@@ -34,7 +42,14 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
         "@context": "http://www.w3.org/ns/anno.jsonld",
         id: `${searchUrl}?q=${q}&page=${page}`,
         type: "AnnotationPage",
-        total: data.num_hits,
+        // Add 'partOf' collection if data is paged
+        partOf: totalPages > 1 ? {
+            id: `${searchUrl}?q=${q}`,
+            type: "AnnotationCollection",
+            total: data.num_hits,
+            first: `${searchUrl}?q=${q}&page=0`,
+            last: `${searchUrl}?q=${q}&page=${totalPages - 1}`
+        } : undefined,
         items: data.hits.map((hit: any) => ({
             "@context": "http://www.w3.org/ns/anno.jsonld",
             id: hit.id,
