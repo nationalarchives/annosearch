@@ -14,12 +14,17 @@ type W3CAnnotation = {
     motivation: string;
 };
 
+type PageReference = {
+    id: string;
+    type: string;
+};
+
 type AnnotationCollection = {
     id: string;
     type: string;
     total: number;
-    first: string;
-    last: string;
+    first: PageReference;
+    last: PageReference;
 };
 
 type SearchResponse = {
@@ -42,13 +47,18 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
         "@context": "http://www.w3.org/ns/anno.jsonld",
         id: `${searchUrl}?q=${q}&page=${page}`,
         type: "AnnotationPage",
-        // Add 'partOf' collection if data is paged
         partOf: totalPages > 1 ? {
             id: `${searchUrl}?q=${q}`,
             type: "AnnotationCollection",
             total: data.num_hits,
-            first: `${searchUrl}?q=${q}&page=0`,
-            last: `${searchUrl}?q=${q}&page=${totalPages - 1}`
+            first: {
+                id: `${searchUrl}?q=${q}&page=0`,
+                type: "AnnotationPage"
+            },
+            last: {
+                id: `${searchUrl}?q=${q}&page=${totalPages - 1}`,
+                type: "AnnotationPage"
+            }
         } : undefined,
         items: data.hits.map((hit: any) => ({
             "@context": "http://www.w3.org/ns/anno.jsonld",
@@ -58,9 +68,7 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
             target: hit.target,
             motivation: hit.motivation,
         })),
-        // Add 'next' link if there is a next page
         next: nextPage !== null ? `${searchUrl}?q=${q}&page=${nextPage}` : undefined,
-        // Add 'prev' link if there is a previous page
         prev: prevPage !== null ? `${searchUrl}?q=${q}&page=${prevPage}` : undefined,
     };
 }
