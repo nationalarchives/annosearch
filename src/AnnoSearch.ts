@@ -7,13 +7,15 @@ interface Config {
     maxHits: number;
     port: number;
     host: string;
+    searchUrl: string;
 }
 
 function loadConfig(): Config {
     return {
-        maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '10', 10),
-        port: parseInt(process.env.ANNOSEARCH_PORT || '3000', 10),
+        maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '20'),
+        port: parseInt(process.env.ANNOSEARCH_PORT || '3000'),
         host: process.env.ANNOSEARCH_HOST || 'http://localhost',
+        searchUrl: process.env.ANNOSEARCH_SEARCH_URL || 'https://example.com/iiif/v2/content/search',
     };
 }
 
@@ -21,43 +23,37 @@ class AnnoSearch {
     private maxHits: number;
     private port: number;
     private host: string;
+    private searchUrl: string;
 
-    constructor({ maxHits, port, host }: Config = loadConfig()) {
+    constructor({ maxHits, port, host, searchUrl }: Config = loadConfig()) {
         this.maxHits = maxHits;
         this.port = port;
         this.host = host;
-    }
-
-    setHost(host: string) {
-        this.host = host;
+        this.searchUrl = searchUrl;
     }
 
     getHost(): string {
         return this.host;
     }
 
-    setPort(port: number) {
-        this.port = port;
-    }
-
     getPort(): number {
         return this.port;
-    }
-
-    setMaxHits(maxHits: number) {
-        this.maxHits = maxHits;
     }
 
     getMaxHits(): number {
         return this.maxHits;
     }
 
+    getSearchUrl(): string {
+        return this.searchUrl;
+    }
+
     async loadIndex(indexId: string, uri: string, type: string) {
         return await loadFunction(indexId, uri, type);
     }
 
-    async searchIndex(indexId: string, query: string, startOffset: number) {
-        return searchFunction(indexId, query, this.maxHits, startOffset);
+    async searchIndex(indexId: string, query: string, startOffset: number, searchUrl: string) {
+        return searchFunction(indexId, query, this.maxHits, startOffset, searchUrl);
     }
 
     async initIndex(indexId: string) {

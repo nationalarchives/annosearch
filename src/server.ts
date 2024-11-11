@@ -8,13 +8,10 @@ import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError, AnnoSearchValidationError } from './errors';
 
-
-const client = new AnnoSearch();
-
-export async function serve(argv: any) {
+export async function serve(client: AnnoSearch) {
     const app = express();
-    const port = argv.port;
-    const host = argv.host;
+    const port = client.getPort();
+    const host = client.getHost()
 
     app.use(pinoHttp({ logger }));
 
@@ -33,7 +30,7 @@ export async function serve(argv: any) {
                 throw new AnnoSearchValidationError('Invalid "maxHits" configuration: must be a positive integer');
             }
             const offset = pageNumber * client.getMaxHits();
-            const results = await client.searchIndex(index as string, q as string, offset);
+            const results = await client.searchIndex(index as string, q as string, offset, client.getSearchUrl());
             res.json(results);
         } catch (error: any) {
             handleWebError(error, res);

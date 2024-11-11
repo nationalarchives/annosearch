@@ -1,11 +1,12 @@
-import { handleError } from './utils';
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
+import { makeSearchResponse } from './iiif';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
 
-export async function searchIndex(indexId: string, query: string, maxHits: number, page: number) {
+
+export async function searchIndex(indexId: string, query: string, maxHits: number, page: number, searchUrl: string) {
     const startOffset = page * maxHits;
     if (startOffset < 0) {
         throw new AnnoSearchValidationError('Invalid paging');
@@ -21,5 +22,5 @@ export async function searchIndex(indexId: string, query: string, maxHits: numbe
     if (!response.data) {
         throw new AnnoSearchValidationError('No data received from the search response');
     }
-    return response.data;
+    return makeSearchResponse(response.data, searchUrl);
 }

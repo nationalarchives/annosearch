@@ -32,7 +32,7 @@ async function searchOptions(yargs: any) {
 
 async function searchCommand(argv: any) {
     try {
-        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.page as number);
+        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.page as number, client.getSearchUrl());
         printJson(results);
     } catch (error) {
         logError(error);
@@ -117,8 +117,8 @@ async function serveOptions(yargs: any) {
         });
 }
 
-async function serveCommand(argv: any) {
-    serve(argv);
+async function serveCommand(yargs: any) {
+    serve(client);
 }
 
 async function versionOptions(yargs: any) { }

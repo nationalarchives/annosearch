@@ -6,7 +6,9 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "sourceMap": true,
+    "moduleResolution": "node"
   },
   "include": ["src/**/*"]
 }
