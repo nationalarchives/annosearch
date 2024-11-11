@@ -17,9 +17,9 @@ export async function serve(client: AnnoSearch) {
 
     app.get('/:index/search', async (req, res) => {
         try {
-            const { index } = req.params;
-            const { q, page } = req.query;
-            const pageNumber = page ? parseInt(page as string, 10) : 0;
+            const { index = '' } = req.params;
+            const { q = '', page = '0' } = req.query;
+            const pageNumber = parseInt(page as string);
             const maxHits = client.getMaxHits();
             // Validate the 'page' parameter
             if (!Number.isInteger(pageNumber) || pageNumber < 0) {

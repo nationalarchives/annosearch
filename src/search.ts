@@ -11,8 +11,8 @@ export async function searchIndex(indexId: string, query: string, maxHits: numbe
     if (startOffset < 0) {
         throw new AnnoSearchValidationError('Invalid paging');
     }
-    if (!indexId.trim() || !query.trim()) {
-        throw new AnnoSearchValidationError('Invalid index or query parameter');
+    if (!query.trim()) {
+        throw new AnnoSearchValidationError('Missing query parameter');
     }
     const response = await quickwitClient.post(`${indexId}/search`, {
         query: query,
