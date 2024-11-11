@@ -22,5 +22,5 @@ export async function searchIndex(indexId: string, query: string, maxHits: numbe
     if (!response.data) {
         throw new AnnoSearchValidationError('No data received from the search response');
     }
-    return makeSearchResponse(response.data, searchUrl);
+    return makeSearchResponse(response.data, searchUrl, query, maxHits, page);
 }

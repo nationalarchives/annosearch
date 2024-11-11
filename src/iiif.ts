@@ -1,4 +1,3 @@
-
 type Body = {
     format: string;
     language: string;
@@ -21,12 +20,19 @@ type SearchResponse = {
     type: string;
     total: number;
     items: W3CAnnotation[];
+    next?: string;
+    prev?: string;
 };
 
-export function makeSearchResponse(data: any, searchUrl: string): SearchResponse {
+export function makeSearchResponse(data: any, searchUrl: string, query: string, maxHits: number, page: number): SearchResponse {
+    const totalPages = Math.ceil(data.num_hits / maxHits);
+    const nextPage = page + 1 < totalPages ? page + 1 : null;
+    const prevPage = page > 0 ? page - 1 : null;
+    const q = encodeURIComponent(query);
+
     return {
         "@context": "http://www.w3.org/ns/anno.jsonld",
-        id: searchUrl,
+        id: `${searchUrl}?q=${q}&page=${page}`,
         type: "AnnotationPage",
         total: data.num_hits,
         items: data.hits.map((hit: any) => ({
@@ -37,10 +43,9 @@ export function makeSearchResponse(data: any, searchUrl: string): SearchResponse
             target: hit.target,
             motivation: hit.motivation,
         })),
+        // Add 'next' link if there is a next page
+        next: nextPage !== null ? `${searchUrl}?q=${q}&page=${nextPage}` : undefined,
+        // Add 'prev' link if there is a previous page
+        prev: prevPage !== null ? `${searchUrl}?q=${q}&page=${prevPage}` : undefined,
     };
 }
-
-
-
-
-
