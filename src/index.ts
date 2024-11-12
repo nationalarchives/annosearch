@@ -1,4 +1,4 @@
-import yargs from 'yargs';
+import yargs, { demand } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { serve } from './server';
@@ -77,7 +77,7 @@ async function loadOptions(yargs: any) {
             type: 'string',
             description: 'Type of IIIF specification',
             choices: ['Manifest', 'Collection', 'AnnotationPage', 'AnnotationCollection'],
-            default: 'Manifest',
+            demandOption: true,
         })
         .option('uri', {
             alias: 'u',

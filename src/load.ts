@@ -12,18 +12,31 @@ async function processAnnotations(indexId: string, parser: any) {
 
     while (currentParser) {
         const annotations = currentParser.iterateAnnotationPageAnnotation();
+        const annotationBatch = [];
+
         for (const annotation of annotations) {
             const jsonl = createJsonl(annotation);
             if (!jsonl) {
                 throw new AnnoSearchValidationError('Invalid annotation data generated from JSONL conversion');
             }
-            const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, jsonl);
+            annotationBatch.push(jsonl);
+        }
+
+        if (annotationBatch.length > 0) {
+            const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, annotationBatch);
             if (!response.data) {
                 throw new AnnoSearchValidationError('No response data received from Quickwit');
             }
-            printJson(response.data);
-
+            // Check if the response is successful and has data
+            if (response.status === 200 && response.data) {
+                // Print a line of '+' symbols based on the batch length
+                console.log('|' + '+'.repeat(annotationBatch.length) + '|');
+            } else {
+                throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
+            }
         }
+
+        // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
             const jsonData = await fetchJson(nextPageUrl);
@@ -31,13 +44,11 @@ async function processAnnotations(indexId: string, parser: any) {
                 throw new AnnoSearchValidationError('No JSON data returned from fetchJson');
             }
             currentParser = new Maniiifest(jsonData, "AnnotationPage");
-
         } else {
             currentParser = null;
         }
     }
 }
-
 
 async function processAnnotationPageRef(indexId: string, annotationPageUrl: string) {
     const jsonData = await fetchJson(annotationPageUrl);
