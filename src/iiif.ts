@@ -31,6 +31,7 @@ type SearchResponse = {
     "@context": string;
     id: string;
     type: string;
+    startIndex: number;
     items: W3CAnnotation[];
     next?: string;
     prev?: string;
@@ -60,6 +61,7 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
                 type: "AnnotationPage"
             }
         } : undefined,
+        startIndex: page * maxHits,
         items: data.hits.map((hit: any) => ({
             "@context": "http://www.w3.org/ns/anno.jsonld",
             id: hit.id,
