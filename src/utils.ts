@@ -97,6 +97,10 @@ export async function fetchJson(url: string) {
     }
 }
 
-export function createJsonl(data: unknown): string {
-    return JSON.stringify(data) + '\n';
+export function createJsonl(data: unknown | unknown[]): string {
+    if (Array.isArray(data)) {
+        return data.map(item => JSON.stringify(item)).join('\n') + '\n';
+    } else {
+        return JSON.stringify(data) + '\n';
+    }
 }

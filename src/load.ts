@@ -1,5 +1,5 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl, printJson } from './utils';
+import { fetchJson, createJsonl } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
@@ -11,26 +11,17 @@ async function processAnnotations(indexId: string, parser: any) {
     let currentParser = parser;
 
     while (currentParser) {
-        const annotations = currentParser.iterateAnnotationPageAnnotation();
-        const annotationBatch = [];
-
-        for (const annotation of annotations) {
-            const jsonl = createJsonl(annotation);
-            if (!jsonl) {
-                throw new AnnoSearchValidationError('Invalid annotation data generated from JSONL conversion');
-            }
-            annotationBatch.push(jsonl);
-        }
-
-        if (annotationBatch.length > 0) {
-            const response = await quickwitClient.post(`${indexId}/ingest?commit=force`, annotationBatch);
+        const annotations = Array.from(currentParser.iterateAnnotationPageAnnotation());
+        if (annotations.length > 0) {
+            const payload = createJsonl(annotations);
+            const response = await quickwitClient.post(`${indexId}/ingest`, payload);
             if (!response.data) {
                 throw new AnnoSearchValidationError('No response data received from Quickwit');
             }
             // Check if the response is successful and has data
             if (response.status === 200 && response.data) {
                 // Print a line of '+' symbols based on the batch length
-                console.log('|' + '+'.repeat(annotationBatch.length) + '|');
+                console.log('|' + '+'.repeat(annotations.length) + '|');
             } else {
                 throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
             }
