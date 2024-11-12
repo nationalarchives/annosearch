@@ -75,8 +75,8 @@ async function loadOptions(yargs: any) {
         .option('type', {
             alias: 't',
             type: 'string',
-            description: 'Type of IIIF specification',
-            choices: ['Manifest', 'Collection', 'AnnotationPage', 'AnnotationCollection'],
+            description: 'Type of IIIF specification or W3C web annotation collection',
+            choices: ['Manifest', 'Collection', 'AnnotationCollection'],
             demandOption: true,
         })
         .option('uri', {

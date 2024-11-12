@@ -1,7 +1,6 @@
 import { Maniiifest } from 'maniiifest';
 import { fetchJson, createJsonl } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
-import { AnnotationPageT } from 'maniiifest/dist/specification';
 import { createClient } from './quickwit';
 
 const contentType = 'application/x-ndjson';
@@ -25,7 +24,7 @@ async function processAnnotations(indexId: string, parser: any) {
                 throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
             }
         }
-
+        
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
@@ -46,7 +45,7 @@ async function processAnnotationPageRef(indexId: string, annotationPageUrl: stri
     await processAnnotations(indexId, parser);
 }
 
-async function processAnnotationPage(indexId: string, page: AnnotationPageT) {
+async function processAnnotationPage(indexId: string, page: any) {
     const parser = new Maniiifest(page, "AnnotationPage");
     await processAnnotations(indexId, parser);
 }
@@ -91,6 +90,20 @@ async function processCollection(indexId: string, collectionUrl: string) {
     }
 }
 
+async function processAnnotationCollection(indexId: string, annotationCollectionUrl: string) {
+    const jsonData = await fetchJson(annotationCollectionUrl);
+    const parser = new Maniiifest(jsonData, "AnnotationCollection");
+    const type = parser.getAnnotationCollectionType();
+    if (type !== 'AnnotationCollection') {
+        throw new AnnoSearchParseError('Should be a W3C annotation collection');
+    }
+    const firstPage = parser.getAnnotationCollectionFirst();
+    if (typeof firstPage === 'string') { // means it is a URI
+        await processAnnotationPageRef(indexId, firstPage);
+    } else {
+        await processAnnotationPage(indexId, firstPage as any);
+    }
+}
 
 export async function loadIndex(indexId: string, uri: string, type: string) {
     if (!indexId.trim() || !uri.trim()) {
@@ -103,6 +116,9 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
             break;
         case 'Collection':
             await processCollection(indexId, uri);
+            break;
+        case 'AnnotationCollection':
+            await processAnnotationCollection(indexId, uri);
             break;
         default:
             throw new AnnoSearchValidationError('unsupported type');
