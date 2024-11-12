@@ -9,7 +9,6 @@ const quickwitClient = createClient(contentType);
 
 async function processAnnotations(indexId: string, parser: any) {
     let currentParser = parser;
-
     while (currentParser) {
         const annotations = Array.from(currentParser.iterateAnnotationPageAnnotation());
         if (annotations.length > 0) {
@@ -97,6 +96,7 @@ export async function loadIndex(indexId: string, uri: string, type: string) {
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
+    console.log(`Loading ${type} from ${uri} into index ${indexId}`);
     switch (type) {
         case 'Manifest':
             await processManifest(indexId, uri);

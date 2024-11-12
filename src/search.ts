@@ -19,8 +19,10 @@ export async function searchIndex(indexId: string, query: string, maxHits: numbe
         max_hits: maxHits,
         start_offset: startOffset,
     });
-    if (!response.data) {
-        throw new AnnoSearchValidationError('No data received from the search response');
+
+    if (response.status === 200 && response.data) {
+        return makeSearchResponse(response.data, searchUrl, query, maxHits, page);
+    } else {
+        throw new AnnoSearchValidationError('Failed to delete index');
     }
-    return makeSearchResponse(response.data, searchUrl, query, maxHits, page);
 }

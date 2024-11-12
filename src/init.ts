@@ -30,9 +30,10 @@ export async function initIndex(indexId: string) {
     const config = readYamlConfig(filePath);
     const modifiedYamlData = modifyConfig(config, indexId);
     const response = await quickwitClient.post('indexes', modifiedYamlData);
-    if (!response.data) {
-        throw new AnnoSearchValidationError('No response data received from Quickwit');
+    if (response.status === 200 && response.data) {
+        console.log('Index created successfully');
+    } else {
+        throw new AnnoSearchValidationError('Failed to create index');
     }
-    printJson(response.data);
 
 }
