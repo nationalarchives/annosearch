@@ -86,15 +86,12 @@ export function handleWebError(error: any, res: Response): void {
 
 // Function to fetch JSON data
 export async function fetchJson(url: string) {
-    try {
-        const response = await axios.get(url);
-        if (!response.data) {
-            throw new AnnoSearchValidationError('No JSON data returned');
-        }
-        return response.data;
-    } catch (error: any) {
-        handleError(error);
+    const response = await axios.get(url);
+    if (!response.data) {
+        throw new AnnoSearchValidationError('No JSON data returned');
     }
+    return response.data;
+
 }
 
 export function createJsonl(data: unknown | unknown[]): string {
