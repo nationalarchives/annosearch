@@ -15,7 +15,7 @@ function loadConfig(): Config {
         maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '10'),
         port: parseInt(process.env.ANNOSEARCH_PORT || '3000'),
         host: process.env.ANNOSEARCH_HOST || 'http://localhost',
-        searchUrl: process.env.ANNOSEARCH_SEARCH_URL || 'https://example.com/iiif/v2/content/search',
+        searchUrl: process.env.ANNOSEARCH_SEARCH_URL || 'http://localhost:3000',
     };
 }
 

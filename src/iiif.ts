@@ -38,7 +38,7 @@ type SearchResponse = {
     partOf?: AnnotationCollection;
 };
 
-export function makeSearchResponse(data: any, searchUrl: string, query: string, maxHits: number, page: number): SearchResponse {
+export function makeSearchResponse(indexId: string, data: any, searchUrl: string, query: string, maxHits: number, page: number): SearchResponse {
     const totalPages = Math.ceil(data.num_hits / maxHits);
     const nextPage = page + 1 < totalPages ? page + 1 : null;
     const prevPage = page > 0 ? page - 1 : null;
@@ -46,18 +46,18 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
 
     return {
         "@context": "http://www.w3.org/ns/anno.jsonld",
-        id: `${searchUrl}?q=${q}&page=${page}`,
+        id: `${searchUrl}/${indexId}/search?q=${q}&page=${page}`,
         type: "AnnotationPage",
         partOf: totalPages > 1 ? {
-            id: `${searchUrl}?q=${q}`,
+            id: `${searchUrl}/${indexId}/search?q=${q}`,
             type: "AnnotationCollection",
             total: data.num_hits,
             first: {
-                id: `${searchUrl}?q=${q}&page=0`,
+                id: `${searchUrl}/${indexId}/search?q=${q}&page=0`,
                 type: "AnnotationPage"
             },
             last: {
-                id: `${searchUrl}?q=${q}&page=${totalPages - 1}`,
+                id: `${searchUrl}/${indexId}/search?q=${q}&page=${totalPages - 1}`,
                 type: "AnnotationPage"
             }
         } : undefined,
@@ -70,7 +70,7 @@ export function makeSearchResponse(data: any, searchUrl: string, query: string, 
             target: hit.target,
             motivation: hit.motivation,
         })),
-        next: nextPage !== null ? `${searchUrl}?q=${q}&page=${nextPage}` : undefined,
-        prev: prevPage !== null ? `${searchUrl}?q=${q}&page=${prevPage}` : undefined,
+        next: nextPage !== null ? `${searchUrl}/${indexId}/search?q=${q}&page=${nextPage}` : undefined,
+        prev: prevPage !== null ? `${searchUrl}/${indexId}/search?q=${q}&page=${prevPage}` : undefined,
     };
 }
