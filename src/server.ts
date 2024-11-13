@@ -29,8 +29,7 @@ export async function serve(client: AnnoSearch) {
             if (!Number.isInteger(maxHits) || maxHits <= 0) {
                 throw new AnnoSearchValidationError('Invalid "maxHits" configuration: must be a positive integer');
             }
-            const offset = pageNumber * client.getMaxHits();
-            const results = await client.searchIndex(index as string, q as string, offset, client.getSearchUrl());
+            const results = await client.searchIndex(index as string, q as string, pageNumber);
             res.json(results);
         } catch (error: any) {
             handleWebError(error, res);
