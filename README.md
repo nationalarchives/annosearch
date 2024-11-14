@@ -60,7 +60,7 @@ annosearch serve --port <port> --host <host>
 ```
 
 - `port`: The port on which to run the server.
-- `host`: The host address.
+- `host`: The host on which to run the server.
 
 #### `version`
 
