@@ -75,10 +75,7 @@ async function processCollection(indexId: string, collectionUrl: string) {
         throw new AnnoSearchParseError('Specification should be a Collection');
     }
     const manifests = parser.iterateCollectionManifest();
-    // need to remove count later once tested
-    let count = 0;
     for (const item of manifests) {
-        if (count >= 1) break;
         const manifestRef = new Maniiifest(item);
         const manifestId = manifestRef.getManifestId();
         if (manifestId) {
@@ -86,7 +83,6 @@ async function processCollection(indexId: string, collectionUrl: string) {
         } else {
             throw new AnnoSearchValidationError('Manifest ID is null');
         }
-        count++;
     }
 }
 
