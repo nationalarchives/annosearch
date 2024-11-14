@@ -81,10 +81,10 @@ Configure AnnoSearch by setting the following environment variables:
 - **`ANNOSEARCH_PORT`**: Port on which AnnoSearch runs.
   - **Default**: `3000`
 
-- **`ANNOSEARCH_HOST`**: Base URL for the AnnoSearch server.
+- **`ANNOSEARCH_HOST`**: Host on which AnnoSearch runs.
   - **Default**: `localhost`
 
-- **`ANNOSEARCH_PUBLIC_URL`**: URL endpoint for public search requests.
+- **`ANNOSEARCH_PUBLIC_URL`**: URL for public-facing server requests.
   - **Default**: `http://localhost:3000`
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
