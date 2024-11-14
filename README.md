@@ -70,6 +70,27 @@ Display the current version of AnnoSearch.
 annosearch version
 ```
 
+
+## Configuration
+
+Configure AnnoSearch by setting the following environment variables:
+
+- **`ANNOSEARCH_MAX_HITS`**: Maximum number of search results per query.
+  - **Default**: `20`
+  
+- **`ANNOSEARCH_PORT`**: Port on which AnnoSearch runs.
+  - **Default**: `3000`
+
+- **`ANNOSEARCH_HOST`**: Base URL for the AnnoSearch server.
+  - **Default**: `http://localhost`
+
+- **`ANNOSEARCH_PUBLIC_URL`**: URL endpoint for public search requests.
+  - **Default**: `http://localhost:3000`
+
+
+Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
+
+
 ## License
 
 This project is licensed under the MIT License.
