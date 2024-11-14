@@ -53,7 +53,7 @@ annosearch search --index <index-id> --query <search-query> [--page <page-number
 
 #### `serve`
 
-Start a web server that provides a search service using the [IIIF Content Search 2.0](https://iiif.io/api/search/2.0/) API.
+Start a web server that provides a search service using the [IIIF Content Search 2.0 API](https://iiif.io/api/search/2.0/).
 
 ```bash
 annosearch serve --port <port> --host <host>
