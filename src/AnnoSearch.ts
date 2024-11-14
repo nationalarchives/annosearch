@@ -14,7 +14,7 @@ function loadConfig(): Config {
     return {
         maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '20'),
         port: parseInt(process.env.ANNOSEARCH_PORT || '3000'),
-        host: process.env.ANNOSEARCH_HOST || 'http://localhost',
+        host: process.env.ANNOSEARCH_HOST || 'localhost',
         searchUrl: process.env.ANNOSEARCH_PUBLIC_URL || 'http://localhost:3000',
     };
 }

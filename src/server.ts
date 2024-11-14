@@ -50,7 +50,7 @@ export async function serve(client: AnnoSearch) {
     });
     app.use(logErrorHandler);
 
-    app.listen(port, () => {
-        console.log(`Server is running on ${host}:${port}`);
+    app.listen(port, host, () => {
+        console.log(`Server is running on http://${host}:${port}`);
     });
 }
