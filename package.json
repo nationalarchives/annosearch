@@ -1,19 +1,26 @@
 {
   "name": "annosearch",
-  "version": "0.0.5",
-  "main": "dist/src/index.js",
+  "version": "0.0.6",
+  "main": "dist/index.js",
+  "files": [
+    "dist/**/*"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "bin": {
-    "annosearch": "dist/src/index.js"
+    "annosearch": "dist/index.js"
   },
-  "keywords": [],
-  "author": "John P. T. Moore",
+  "keywords": [
+    "IIIF",
+    "Search",
+    "W3C web annotation",
+    "IIIF Content Search API"
+  ],  "author": "John P. T. Moore",
   "license": "MIT",
-  "description": "",
+  "description": "W3C web annotation search using the IIIF content search AP",
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.8.4",

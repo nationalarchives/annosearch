@@ -7,6 +7,7 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "outDir": "./dist",
+    "rootDir": "./src",               // Root directory of source files
     "sourceMap": true,
     "moduleResolution": "node"
   },
