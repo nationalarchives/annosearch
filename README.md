@@ -8,7 +8,7 @@ AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to effic
 Make sure you have Quickwit installed and [running](https://quickwit.io/docs/get-started/quickstart) and then install AnnoSearch.
 
 ```bash
-npm install annosearch
+npm install -g annosearch
 ```
 
 ### Commands

@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import yargs, { demand } from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
