@@ -18,7 +18,7 @@ export async function serve(client: AnnoSearch) {
     app.get('/:index/search', async (req, res) => {
         try {
             const { index = '' } = req.params;
-            const { q = '', page = '0' } = req.query;
+            const { q = '', page = '0', motivation = undefined } = req.query;
             const pageNumber = parseInt(page as string);
             const maxHits = client.getMaxHits();
             // Validate the 'page' parameter
@@ -29,7 +29,7 @@ export async function serve(client: AnnoSearch) {
             if (!Number.isInteger(maxHits) || maxHits <= 0) {
                 throw new AnnoSearchValidationError('Invalid "maxHits" configuration: must be a positive integer');
             }
-            const results = await client.searchIndex(index as string, q as string, pageNumber);
+            const results = await client.searchIndex(index as string, q as string, motivation as string, pageNumber);
             res.json(results);
         } catch (error: any) {
             handleWebError(error, res);

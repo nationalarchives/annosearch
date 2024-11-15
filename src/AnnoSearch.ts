@@ -52,9 +52,9 @@ class AnnoSearch {
         return await loadFunction(indexId, uri, type);
     }
 
-    async searchIndex(indexId: string, query: string, page: number) {
-        return searchFunction(indexId, query, this.maxHits, page, this.searchUrl);
-    }
+    async searchIndex(indexId: string, query: string, motivation: string, page: number) {
+        return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl);
+    }    
 
     async initIndex(indexId: string) {
         return await initFunction(indexId);

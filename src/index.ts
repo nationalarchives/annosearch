@@ -24,6 +24,13 @@ async function searchOptions(yargs: any) {
             description: 'Search query',
             demandOption: true,
         })
+        .option('motivation', {
+            alias: 'm',
+            type: 'string',
+            description: 'Motivation',
+            choices: ['painting', 'supplementing', 'contextualizing', 'contentState', 'highlighting', 'commenting', 'tagging'],
+            demandOption: false,
+        })
         .option('page', {
             alias: 'p',
             type: 'number',
@@ -34,7 +41,7 @@ async function searchOptions(yargs: any) {
 
 async function searchCommand(argv: any) {
     try {
-        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.page as number);
+        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.motivation, argv.page as number);
         printJson(results);
     } catch (error) {
         logError(error);

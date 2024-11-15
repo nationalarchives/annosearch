@@ -38,26 +38,28 @@ type SearchResponse = {
     partOf?: AnnotationCollection;
 };
 
-export function makeSearchResponse(indexId: string, data: any, searchUrl: string, query: string, maxHits: number, page: number): SearchResponse {
+export function makeSearchResponse(indexId: string, data: any, searchUrl: string, query: string, motivation: string, maxHits: number, page: number): SearchResponse {
     const totalPages = Math.ceil(data.num_hits / maxHits);
     const nextPage = page + 1 < totalPages ? page + 1 : null;
     const prevPage = page > 0 ? page - 1 : null;
     const q = encodeURIComponent(query);
+    const motivationParam = motivation ? `&motivation=${motivation}` : '';
+    const id = `${searchUrl}/${indexId}/search?q=${q}&${motivationParam}`;
 
     return {
         "@context": "http://www.w3.org/ns/anno.jsonld",
-        id: `${searchUrl}/${indexId}/search?q=${q}&page=${page}`,
+        id: `${id}&page=${page}`,
         type: "AnnotationPage",
         partOf: totalPages > 1 ? {
-            id: `${searchUrl}/${indexId}/search?q=${q}`,
+            id: id,
             type: "AnnotationCollection",
             total: data.num_hits,
             first: {
-                id: `${searchUrl}/${indexId}/search?q=${q}&page=0`,
+                id: `${id}&page=0`,
                 type: "AnnotationPage"
             },
             last: {
-                id: `${searchUrl}/${indexId}/search?q=${q}&page=${totalPages - 1}`,
+                id: `${id}&page=${totalPages - 1}`,
                 type: "AnnotationPage"
             }
         } : undefined,
@@ -70,7 +72,7 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
             target: hit.target,
             motivation: hit.motivation,
         })),
-        next: nextPage !== null ? `${searchUrl}/${indexId}/search?q=${q}&page=${nextPage}` : undefined,
-        prev: prevPage !== null ? `${searchUrl}/${indexId}/search?q=${q}&page=${prevPage}` : undefined,
+        next: nextPage !== null ? `${id}&page=${nextPage}` : undefined,
+        prev: prevPage !== null ? `${id}&page=${prevPage}` : undefined,
     };
 }

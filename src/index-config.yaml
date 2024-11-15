@@ -8,8 +8,6 @@ doc_mapping:
       field_mappings:
         - name: value
           type: text
-
-search_settings:
-  default_search_fields: 
-    - "body.value"
+    - name: motivation
+      type: text
 
