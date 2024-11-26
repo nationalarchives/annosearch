@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 
-import yargs, { demand } from 'yargs';
+import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import AnnoSearch from './AnnoSearch';
 import { serve } from './server';
 import { printJson, logError } from './utils';
 import { version } from '../package.json'; // Import version from package.json
-
+import { motivations } from './validate';
 
 const client = new AnnoSearch();
 
@@ -28,7 +28,7 @@ async function searchOptions(yargs: any) {
             alias: 'm',
             type: 'string',
             description: 'Motivation',
-            choices: ['painting', 'supplementing', 'contextualizing', 'contentState', 'highlighting', 'commenting', 'tagging'],
+            choices: motivations,
             demandOption: false,
         })
         .option('date', {

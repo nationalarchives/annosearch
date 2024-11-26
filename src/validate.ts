@@ -1,5 +1,15 @@
 import { AnnoSearchValidationError } from "./errors";
 
+export const motivations = [
+    'painting',
+    'supplementing',
+    'contextualizing',
+    'contentState',
+    'highlighting',
+    'commenting',
+    'tagging'
+];
+
 export function validateQueryParameter(query: string): void {
     if (!query.trim()) {
         throw new AnnoSearchValidationError('Missing query parameter');
@@ -21,6 +31,12 @@ export function validatePageNumber(pageNumber: number): void {
 export function validateMaxHits(maxHits: number): void {
     if (!Number.isInteger(maxHits) || maxHits <= 0) {
         throw new AnnoSearchValidationError('Invalid "maxHits" configuration: must be a positive integer');
+    }
+}
+
+export function validateMotivation(motivation?: string): void {
+    if (motivation && !motivations.includes(motivation)) {
+        throw new AnnoSearchValidationError('Invalid motivation parameter');
     }
 }
 

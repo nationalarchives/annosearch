@@ -1,7 +1,7 @@
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
 import { makeSearchResponse } from './iiif';
-import { validateQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber } from './validate';
+import { validateQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation } from './validate';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
@@ -30,6 +30,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateMaxHits(maxHits);
     validateDateRanges(date);
     validateOffset(startOffset);
+    validateMotivation(motivation);
     const qQuery = `body.value:${q}`;
     const motivationQuery = motivation ? ` AND motivation:${motivation}` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
