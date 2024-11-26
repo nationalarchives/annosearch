@@ -3,10 +3,10 @@
 import express from 'express';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
-import { handleWebError, validateDateRanges } from './utils';
+import { handleWebError } from './utils';
 import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
-import { AnnoSearchNotFoundError, AnnoSearchValidationError } from './errors';
+import { AnnoSearchNotFoundError } from './errors';
 
 export async function serve(client: AnnoSearch) {
     const app = express();
@@ -19,17 +19,7 @@ export async function serve(client: AnnoSearch) {
         try {
             const { index = '' } = req.params;
             const { q = '', page = '0', motivation = undefined , date = undefined } = req.query;
-            const pageNumber = parseInt(page as string);
-            const maxHits = client.getMaxHits();
-            // Validate the 'page' parameter
-            if (!Number.isInteger(pageNumber) || pageNumber < 0) {
-                throw new AnnoSearchValidationError('Invalid "page" parameter: must be a non-negative integer');
-            }
-            // Validate the 'maxHits' parameter
-            if (!Number.isInteger(maxHits) || maxHits <= 0) {
-                throw new AnnoSearchValidationError('Invalid "maxHits" configuration: must be a positive integer');
-            }
-            validateDateRanges(date as string);
+            const pageNumber = Number(page);
             const results = await client.searchIndex(index as string, q as string, motivation as string, pageNumber, date as string);
             res.json(results);
         } catch (error: any) {

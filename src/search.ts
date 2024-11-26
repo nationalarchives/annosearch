@@ -1,6 +1,7 @@
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
 import { makeSearchResponse } from './iiif';
+import { validateQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber } from './validate';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
@@ -24,16 +25,14 @@ function buildDateQueryFromString(dateRangesString: string): string {
 
 export async function searchIndex(indexId: string, q: string, motivation: string, maxHits: number, page: number, searchUrl: string, date: string) {
     const startOffset = page * maxHits;
-    if (startOffset < 0) {
-        throw new AnnoSearchValidationError('Invalid paging');
-    }
-    if (!q.trim()) {
-        throw new AnnoSearchValidationError('Missing query parameter');
-    }
+    validateQueryParameter(q);
+    validatePageNumber(page);
+    validateMaxHits(maxHits);
+    validateDateRanges(date);
+    validateOffset(startOffset);
     const qQuery = `body.value:${q}`;
     const motivationQuery = motivation ? ` AND motivation:${motivation}` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
-    //console.log(`Searching index ${indexId} with query: ${qQuery}${motivationQuery}${dateQuery}`);
     const response = await quickwitClient.post(`${indexId}/search`, {
         query: `${qQuery}${motivationQuery}${dateQuery}`,
         max_hits: maxHits,
