@@ -9,6 +9,7 @@ type W3CAnnotation = {
     "@context": string;
     id: string;
     type: string;
+    created?: string;
     body: Body;
     target: string;
     motivation: string;
@@ -68,6 +69,7 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
             "@context": "http://www.w3.org/ns/anno.jsonld",
             id: hit.id,
             type: hit.type,
+            created: hit.created,
             body: hit.body,
             target: hit.target,
             motivation: hit.motivation,
