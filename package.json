@@ -1,6 +1,6 @@
 {
   "name": "annosearch",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist/index.js",
   "files": [
     "dist/**/*"
@@ -20,7 +20,7 @@
     "IIIF Content Search API"
   ],  "author": "John P. T. Moore",
   "license": "MIT",
-  "description": "W3C web annotation search using the IIIF content search AP",
+  "description": "W3C web annotation search using the IIIF content search API",
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.8.4",

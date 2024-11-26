@@ -10,4 +10,7 @@ doc_mapping:
           type: text
     - name: motivation
       type: text
+    - name: created
+      type: datetime
+      fast: true
 

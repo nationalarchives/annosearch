@@ -101,3 +101,27 @@ export function createJsonl(data: unknown | unknown[]): string {
         return JSON.stringify(data) + '\n';
     }
 }
+
+export function validateDateRanges(ranges: string): void {
+    // Split the ranges by space
+    const rangeList = ranges.split(" ");
+
+    // Define the regex pattern for a valid date range in ISO8601 format
+    const rangePattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z\/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    // Check each range
+    for (const range of rangeList) {
+        if (!rangePattern.test(range)) {
+            throw new AnnoSearchValidationError(`Invalid range format: ${range}`);
+        }
+
+        // Further validate that the start date is before the end date
+        const [start, end] = range.split("/");
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        if (isNaN(startDate.getTime()) || isNaN(endDate.getTime()) || startDate > endDate) {
+            throw new AnnoSearchValidationError(`Invalid date range: ${range}`);
+        }
+    }
+}

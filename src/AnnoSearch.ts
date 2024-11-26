@@ -52,8 +52,8 @@ class AnnoSearch {
         return await loadFunction(indexId, uri, type);
     }
 
-    async searchIndex(indexId: string, query: string, motivation: string, page: number) {
-        return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl);
+    async searchIndex(indexId: string, query: string, motivation: string, page: number, date: string) {
+        return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl, date);
     }    
 
     async initIndex(indexId: string) {
