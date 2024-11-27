@@ -7,6 +7,7 @@ import { handleWebError } from './utils';
 import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError } from './errors';
+import validator from 'validator';
 
 export async function serve(client: AnnoSearch) {
     const app = express();
@@ -17,10 +18,14 @@ export async function serve(client: AnnoSearch) {
 
     app.get('/:index/search', async (req, res) => {
         try {
-            const { index = '' } = req.params;
-            const { q = '', page = '0', motivation = undefined , date = undefined } = req.query;
-            const pageNumber = Number(page);
-            const results = await client.searchIndex(index as string, q as string, motivation as string, pageNumber, date as string);
+            // Sanitize path parameter
+            const index = validator.escape(req.params.index || '');
+            // Sanitize query parameters
+            const q = validator.escape(req.query.q as string || '');
+            const page = validator.toInt(req.query.page as string || '0');
+            const motivation = validator.escape(req.query.motivation as string || '');
+            const date = validator.escape(req.query.date as string || '');
+            const results = await client.searchIndex(index, q, motivation, page, date);
             res.json(results);
         } catch (error: any) {
             handleWebError(error, res);

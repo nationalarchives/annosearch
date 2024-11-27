@@ -34,15 +34,20 @@ export function validateMaxHits(maxHits: number): void {
     }
 }
 
-export function validateMotivation(motivation?: string): void {
-    if (motivation && !motivations.includes(motivation)) {
+export function validateMotivation(motivation: string): void {
+    // handle when not included
+    if (!motivation) {
+        return;
+    }
+
+    if (!motivations.includes(motivation)) {
         throw new AnnoSearchValidationError('Invalid motivation parameter');
     }
 }
 
-export function validateDateRanges(ranges?: string): void {
+export function validateDateRanges(ranges: string): void {
     // handle when not included
-    if (ranges === undefined) {
+    if (!ranges) {
         return
     }
     // Split the ranges by space
