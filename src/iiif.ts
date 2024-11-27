@@ -1,45 +1,6 @@
-type Body = {
-    format: string;
-    language: string;
-    type: string;
-    value: string;
-};
 
-type W3CAnnotation = {
-    "@context": string;
-    id: string;
-    type: string;
-    created?: string;
-    body: Body;
-    target: string;
-    motivation: string;
-};
 
-type PageReference = {
-    id: string;
-    type: string;
-};
-
-type AnnotationCollection = {
-    id: string;
-    type: string;
-    total: number;
-    first: PageReference;
-    last: PageReference;
-};
-
-type SearchResponse = {
-    "@context": string;
-    id: string;
-    type: string;
-    startIndex: number;
-    items: W3CAnnotation[];
-    next?: string;
-    prev?: string;
-    partOf?: AnnotationCollection;
-};
-
-export function makeSearchResponse(indexId: string, data: any, searchUrl: string, query: string, motivation: string, maxHits: number, page: number, date: string): SearchResponse {
+export function makeSearchResponse(indexId: string, data: any, searchUrl: string, query: string, motivation: string, maxHits: number, page: number, date: string): any {
     const totalPages = Math.ceil(data.num_hits / maxHits);
     const nextPage = page + 1 < totalPages ? page + 1 : null;
     const prevPage = page > 0 ? page - 1 : null;
