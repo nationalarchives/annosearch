@@ -43,10 +43,10 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
     const totalPages = Math.ceil(data.num_hits / maxHits);
     const nextPage = page + 1 < totalPages ? page + 1 : null;
     const prevPage = page > 0 ? page - 1 : null;
-    const q = encodeURIComponent(query);
-    const motivationParam = motivation ? `&motivation=${motivation}` : '';
+    const queryParam = encodeURIComponent(query);
+    const motivationParam = motivation ? `&motivation=${encodeURIComponent(motivation)}` : '';
     const dateParam = date ? `&date=${encodeURIComponent(date)}` : '';
-    const id = `${searchUrl}/${indexId}/search?q=${q}${motivationParam}${dateParam}`;
+    const id = `${searchUrl}/${indexId}/search?q=${queryParam}${motivationParam}${dateParam}`;
 
     return {
         "@context": "http://www.w3.org/ns/anno.jsonld",
