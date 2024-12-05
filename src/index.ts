@@ -37,6 +37,12 @@ async function searchOptions(yargs: any) {
             description: 'Date range',
             demandOption: false,
         })
+        .option('user', {
+            alias: 'u',
+            type: 'string',
+            description: 'User ID',
+            demandOption: false,
+        })
         .option('page', {
             alias: 'p',
             type: 'number',
@@ -47,7 +53,7 @@ async function searchOptions(yargs: any) {
 
 async function searchCommand(argv: any) {
     try {
-        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.motivation, argv.page as number, argv.date as string);
+        const results = await client.searchIndex(argv.index as string, argv.query as string, argv.motivation, argv.page as number, argv.date as string, argv.user as string);
         printJson(results);
     } catch (error) {
         logError(error);

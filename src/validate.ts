@@ -70,3 +70,18 @@ export function validateDateRanges(ranges: string): void {
         }
     }
 }
+
+export function validateUser(user: string): void {
+    if (!user) {
+        return;
+    }
+
+    const uriPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/;
+    const userList = user.split(' ');
+
+    for (const u of userList) {
+        if (!uriPattern.test(u)) {
+            throw new AnnoSearchValidationError(`Invalid URI in user parameter: ${u}`);
+        }
+    }
+}

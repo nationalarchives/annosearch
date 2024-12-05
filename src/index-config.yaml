@@ -13,4 +13,10 @@ doc_mapping:
     - name: created
       type: datetime
       fast: true
+    - name: creator
+      type: text
+    - name: creator.name
+      type: text
+
+
 
