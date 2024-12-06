@@ -29,7 +29,7 @@ function buildUserQueryFromString(userString: string): string {
 
     // Map each user into a Quickwit-compatible query fragment
     return users
-        .map(user => `(creator:${user} OR creator.name:${user})`)
+        .map(user => `(creator:"${user}" OR creator.name:"${user}")`)
         .join(" OR ");
 }
 
@@ -41,7 +41,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateDateRanges(date);
     validateOffset(startOffset);
     validateMotivation(motivation);
-    //validateUser(user);
+    validateUser(user);
     const qQuery = `body.value:${q}`;
     const motivationQuery = motivation ? ` AND motivation:${motivation}` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
@@ -54,7 +54,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     });
 
     if (response.status === 200 && response.data) {
-        return makeSearchResponse(indexId, response.data, searchUrl, q, motivation, maxHits, page, date);
+        return makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
     } else {
         throw new AnnoSearchValidationError('Failed to delete index');
     }
