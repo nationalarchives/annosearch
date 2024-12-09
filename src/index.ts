@@ -138,7 +138,9 @@ async function serveOptions(yargs: any) {
         });
 }
 
-async function serveCommand(yargs: any) {
+async function serveCommand(argv: any) {
+    client.setPort(argv.port);
+    client.setHost(argv.host);
     serve(client);
 }
 

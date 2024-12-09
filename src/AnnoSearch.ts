@@ -36,16 +36,32 @@ class AnnoSearch {
         return this.host;
     }
 
+    setHost(host: string) {
+        this.host = host;
+    }
+
     getPort(): number {
         return this.port;
+    }
+
+    setPort(port: number) {
+        this.port = port;
     }
 
     getMaxHits(): number {
         return this.maxHits;
     }
 
+    setMaxHits(maxHits: number) {
+        this.maxHits = maxHits
+    }
+
     getSearchUrl(): string {
         return this.searchUrl;
+    }
+
+    setSearchUrl(searchUrl: string) {
+        this.searchUrl = searchUrl;
     }
 
     async loadIndex(indexId: string, uri: string, type: string) {
