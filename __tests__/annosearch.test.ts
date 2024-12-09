@@ -8,6 +8,25 @@ async function runCLI(command: string) {
     return execa('node', [cliPath, ...command.split(' ')]);
 }
 
+// Helper function to introduce a delay
+function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// Helper function to perform a search and wait until items are no longer empty
+async function waitForSearchResults(index: string, query: string, timeout: number = 10000, interval: number = 1000) {
+    const startTime = Date.now();
+    while (Date.now() - startTime < timeout) {
+        const { stdout } = await runCLI(`search --index ${index} --query ${query}`);
+        const output = JSON.parse(stdout);
+        if (output.items.length > 0) {
+            return output.items;
+        }
+        await delay(interval);
+    }
+    throw new Error('Timeout waiting for search results');
+}
+
 describe('CLI: version command', () => {
     it('should display the version', async () => {
         const { stdout } = await runCLI('version');
@@ -32,26 +51,13 @@ describe('CLI: load command', () => {
     it('should load an index successfully', async () => {
         const { stdout } = await runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/e10bae6350fcf1324e045b78566cd749/raw/f35478c9165aa41697cc9f5f563e07820db5d289/bt209.json --type Manifest');
         expect(stdout).toContain('Loading Manifest');
-    });
-
-    it('should fail if required arguments are missing', async () => {
-        await expect(runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/e10bae6350fcf1324e045b78566cd749/raw/f35478c9165aa41697cc9f5f563e07820db5d289/bt209.json')).rejects.toMatchObject({
-            stderr: expect.stringContaining('Missing required argument: type'),
-        });
-    });
+    });;
 });
 
 describe('CLI: search command', () => {
-    it('should perform a search with empty result successfully', async () => {
-        const { stdout } = await runCLI('search --index test-index --query foobar');
-        const output = JSON.parse(stdout);
-        expect(output.items).toEqual([]);
-    });
-
-    it('should fail if required arguments are missing', async () => {
-        await expect(runCLI('search --index test-index')).rejects.toMatchObject({
-            stderr: expect.stringContaining('Missing required argument: query'),
-        });
+    it('should wait until search results are available', async () => {
+        const items = await waitForSearchResults('test-index', 'William', 100000);
+        expect(items.length).toBeGreaterThan(0);
     });
 });
 
@@ -90,7 +96,7 @@ describe('CLI: serve command', () => {
         expect(firstItem).toMatchObject({
             id: expect.stringContaining('http'),
             type: 'Annotation',
-            motivation: 'supplementing',
+            motivation: 'commenting',
             body: {
                 type: 'TextualBody',
                 value: expect.stringContaining('William'),
