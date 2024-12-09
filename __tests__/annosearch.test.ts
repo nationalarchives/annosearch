@@ -1,18 +1,11 @@
-import { exec } from 'child_process';
+import execa from 'execa';
 import path from 'path';
+import axios from 'axios';
 
 const cliPath = path.resolve(__dirname, '../dist/index.js');
 
-function runCLI(args: string): Promise<{ stdout: string; stderr: string }> {
-    return new Promise((resolve, reject) => {
-        exec(`node ${cliPath} ${args}`, (error, stdout, stderr) => {
-            if (error) {
-                reject({ stdout, stderr });
-            } else {
-                resolve({ stdout, stderr });
-            }
-        });
-    });
+async function runCLI(command: string) {
+    return execa('node', [cliPath, ...command.split(' ')]);
 }
 
 describe('CLI: version command', () => {
@@ -37,19 +30,19 @@ describe('CLI: init command', () => {
 
 describe('CLI: load command', () => {
     it('should load an index successfully', async () => {
-        const { stdout } = await runCLI('load --index test-index --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json --type Manifest');
+        const { stdout } = await runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/e10bae6350fcf1324e045b78566cd749/raw/f35478c9165aa41697cc9f5f563e07820db5d289/bt209.json --type Manifest');
         expect(stdout).toContain('Loading Manifest');
     });
 
     it('should fail if required arguments are missing', async () => {
-        await expect(runCLI('load --index test-index --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json')).rejects.toMatchObject({
+        await expect(runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/e10bae6350fcf1324e045b78566cd749/raw/f35478c9165aa41697cc9f5f563e07820db5d289/bt209.json')).rejects.toMatchObject({
             stderr: expect.stringContaining('Missing required argument: type'),
         });
     });
 });
 
 describe('CLI: search command', () => {
-    it('should perform a search successfully', async () => {
+    it('should perform a search with empty result successfully', async () => {
         const { stdout } = await runCLI('search --index test-index --query foobar');
         const output = JSON.parse(stdout);
         expect(output.items).toEqual([]);
@@ -59,6 +52,31 @@ describe('CLI: search command', () => {
         await expect(runCLI('search --index test-index')).rejects.toMatchObject({
             stderr: expect.stringContaining('Missing required argument: query'),
         });
+    });
+});
+
+
+describe('CLI: serve command', () => {
+    let serverProcess: execa.ExecaChildProcess;
+
+    beforeAll(async () => {
+        serverProcess = execa('node', [cliPath, 'serve']);
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for the server to start
+    });
+
+    afterAll(() => {
+        serverProcess.kill();
+    });
+
+    it('API: version request', async () => {
+        const response = await axios.get('http://localhost:3000/version');
+        const version = require('../package.json').version;
+        expect(response.data).toEqual({ version });
+    });
+
+    it('API: should perform a search with empty result successfully', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=foobar');
+        expect(response.data.items).toEqual([]);
     });
 });
 
@@ -75,12 +93,6 @@ describe('CLI: delete command', () => {
     });
 });
 
-// describe('CLI: serve command', () => {
-//     it('should start the server successfully', async () => {
-//         const { stdout } = await runCLI('serve --port 8080 --host localhost');
-//         expect(stdout).toContain('Server running on http://localhost:8080');
-//     });
-// });
 
 
 
