@@ -1,0 +1,611 @@
+{
+  "type": "AnnotationCollection",
+  "id": "http://localhost:3000/test-index",
+  "label": { "en": ["Test Annotation Collection for Paging"] },
+  "total": 25,
+  "items": [
+    {
+      "id": "http://localhost:3000/annotations/1",
+      "type": "Annotation",
+      "motivation": "highlighting",
+      "created": "2024-01-01T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/1",
+        "type": "Person",
+        "name": "Alice"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 1 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/1"
+    },
+    {
+      "id": "http://localhost:3000/annotations/2",
+      "type": "Annotation",
+      "motivation": "commenting",
+      "created": "2024-01-02T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/2",
+        "type": "Person",
+        "name": "Bob"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 2 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/2"
+    },
+    {
+      "id": "http://localhost:3000/annotations/3",
+      "type": "Annotation",
+      "motivation": "tagging",
+      "created": "2024-01-03T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/3",
+        "type": "Person",
+        "name": "Charlie"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 3 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/3"
+    },
+    {
+      "id": "http://localhost:3000/annotations/4",
+      "type": "Annotation",
+      "motivation": "highlighting",
+      "created": "2024-01-04T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/1",
+        "type": "Person",
+        "name": "Alice"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 4 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/4"
+    },
+    {
+      "id": "http://localhost:3000/annotations/5",
+      "type": "Annotation",
+      "motivation": "highlighting",
+      "created": "2024-01-05T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/2",
+        "type": "Person",
+        "name": "Bob"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 5 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/5"
+    },
+    {
+      "id": "http://localhost:3000/annotations/6",
+      "type": "Annotation",
+      "motivation": "commenting",
+      "created": "2024-01-06T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/3",
+        "type": "Person",
+        "name": "Charlie"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 6 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/6"
+    },
+    {
+      "id": "http://localhost:3000/annotations/7",
+      "type": "Annotation",
+      "motivation": "tagging",
+      "created": "2024-01-07T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/1",
+        "type": "Person",
+        "name": "Alice"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 7 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/7"
+    },
+    {
+      "id": "http://localhost:3000/annotations/8",
+      "type": "Annotation",
+      "motivation": "highlighting",
+      "created": "2024-01-08T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/2",
+        "type": "Person",
+        "name": "Bob"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 8 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/8"
+    },
+    {
+      "id": "http://localhost:3000/annotations/9",
+      "type": "Annotation",
+      "motivation": "commenting",
+      "created": "2024-01-09T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/3",
+        "type": "Person",
+        "name": "Charlie"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 9 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/9"
+    },
+    {
+      "id": "http://localhost:3000/annotations/10",
+      "type": "Annotation",
+      "motivation": "highlighting",
+      "created": "2024-01-10T12:00:00Z",
+      "creator": {
+        "id": "http://example.org/users/1",
+        "type": "Person",
+        "name": "Alice"
+      },
+      "body": {
+        "type": "TextualBody",
+        "value": "Annotation 10 text.",
+        "format": "text/plain"
+      },
+      "target": "http://example.org/canvas/10"
+    },
+    {
+      "type": "AnnotationCollection",
+      "id": "http://localhost:3000/test-index",
+      "label": { "en": ["Test Annotation Collection for Paging"] },
+      "total": 25,
+      "items": [
+        {
+          "id": "http://localhost:3000/annotations/1",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-01T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 1 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/1"
+        },
+        {
+          "id": "http://localhost:3000/annotations/2",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-02T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 2 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/2"
+        },
+        {
+          "id": "http://localhost:3000/annotations/3",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-03T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 3 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/3"
+        },
+        {
+          "id": "http://localhost:3000/annotations/4",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-04T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 4 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/4"
+        },
+        {
+          "id": "http://localhost:3000/annotations/5",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-05T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 5 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/5"
+        },
+        {
+          "id": "http://localhost:3000/annotations/6",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-06T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 6 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/6"
+        },
+        {
+          "id": "http://localhost:3000/annotations/7",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-07T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 7 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/7"
+        },
+        {
+          "id": "http://localhost:3000/annotations/8",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-08T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 8 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/8"
+        },
+        {
+          "id": "http://localhost:3000/annotations/9",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-09T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 9 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/9"
+        },
+        {
+          "id": "http://localhost:3000/annotations/10",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-10T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 10 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/10"
+        },
+        {
+          "id": "http://localhost:3000/annotations/11",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-11T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 11 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/11"
+        },
+        {
+          "id": "http://localhost:3000/annotations/12",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-12T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 12 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/12"
+        },
+        {
+          "id": "http://localhost:3000/annotations/13",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-13T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 13 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/13"
+        },
+        {
+          "id": "http://localhost:3000/annotations/14",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-14T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 14 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/14"
+        },
+        {
+          "id": "http://localhost:3000/annotations/15",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-15T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 15 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/15"
+        },
+        {
+          "id": "http://localhost:3000/annotations/16",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-16T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 16 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/16"
+        },
+        {
+          "id": "http://localhost:3000/annotations/17",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-17T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 17 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/17"
+        },
+        {
+          "id": "http://localhost:3000/annotations/18",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-18T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 18 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/18"
+        },
+        {
+          "id": "http://localhost:3000/annotations/19",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-19T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 19 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/19"
+        },
+        {
+          "id": "http://localhost:3000/annotations/20",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-20T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 20 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/20"
+        },
+        {
+          "id": "http://localhost:3000/annotations/21",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-21T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 21 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/21"
+        },
+        {
+          "id": "http://localhost:3000/annotations/22",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-22T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 22 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/22"
+        },
+        {
+          "id": "http://localhost:3000/annotations/23",
+          "type": "Annotation",
+          "motivation": "commenting",
+          "created": "2024-01-23T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/2",
+            "type": "Person",
+            "name": "Bob"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 23 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/23"
+        },
+        {
+          "id": "http://localhost:3000/annotations/24",
+          "type": "Annotation",
+          "motivation": "tagging",
+          "created": "2024-01-24T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/3",
+            "type": "Person",
+            "name": "Charlie"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 24 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/24"
+        },
+        {
+          "id": "http://localhost:3000/annotations/25",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "created": "2024-01-25T12:00:00Z",
+          "creator": {
+            "id": "http://example.org/users/1",
+            "type": "Person",
+            "name": "Alice"
+          },
+          "body": {
+            "type": "TextualBody",
+            "value": "Annotation 25 text.",
+            "format": "text/plain"
+          },
+          "target": "http://example.org/canvas/25"
+        }
+      ]
+    }
+  ]
+}
