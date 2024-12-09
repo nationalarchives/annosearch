@@ -35,31 +35,32 @@ describe('CLI: init command', () => {
     });
 });
 
-// describe('CLI: load command', () => {
-//     it('should load an index successfully', async () => {
-//         const { stdout } = await runCLI('load --index test-index --uri http://example.com --type Manifest');
-//         expect(stdout).toContain('Index loaded successfully');
-//     });
+describe('CLI: load command', () => {
+    it('should load an index successfully', async () => {
+        const { stdout } = await runCLI('load --index test-index --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json --type Manifest');
+        expect(stdout).toContain('Loading Manifest');
+    });
 
-//     it('should fail if required arguments are missing', async () => {
-//         await expect(runCLI('load --index test-index')).rejects.toMatchObject({
-//             stderr: expect.stringContaining('Missing required argument: uri'),
-//         });
-//     });
-// });
+    it('should fail if required arguments are missing', async () => {
+        await expect(runCLI('load --index test-index --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json')).rejects.toMatchObject({
+            stderr: expect.stringContaining('Missing required argument: type'),
+        });
+    });
+});
 
-// describe('CLI: search command', () => {
-//     it('should perform a search successfully', async () => {
-//         const { stdout } = await runCLI('search --index test-index --query test-query');
-//         expect(stdout).toContain('Search results');
-//     });
+describe('CLI: search command', () => {
+    it('should perform a search successfully', async () => {
+        const { stdout } = await runCLI('search --index test-index --query foobar');
+        const output = JSON.parse(stdout);
+        expect(output.items).toEqual([]);
+    });
 
-//     it('should fail if required arguments are missing', async () => {
-//         await expect(runCLI('search --index test-index')).rejects.toMatchObject({
-//             stderr: expect.stringContaining('Missing required argument: query'),
-//         });
-//     });
-// });
+    it('should fail if required arguments are missing', async () => {
+        await expect(runCLI('search --index test-index')).rejects.toMatchObject({
+            stderr: expect.stringContaining('Missing required argument: query'),
+        });
+    });
+});
 
 describe('CLI: delete command', () => {
     it('should delete an index successfully', async () => {
