@@ -79,7 +79,7 @@ async function initOptions(yargs: any) {
 
 async function loadCommand(argv: any) {
     try {
-        await client.loadIndex(argv.index as string, argv.uri as string, argv.type as string);
+        await client.loadIndex(argv.index as string, argv.uri as string, argv.type as string, argv.commit as boolean);
     } catch (error) {
         logError(error);
     }
@@ -99,6 +99,11 @@ async function loadOptions(yargs: any) {
             description: 'Type of IIIF specification or W3C web annotation collection',
             choices: ['Manifest', 'Collection', 'AnnotationCollection'],
             demandOption: true,
+        })
+        .option('commit', {
+            type: 'boolean',
+            description: 'Force commit the changes to the index',
+            default: false
         })
         .option('uri', {
             alias: 'u',

@@ -6,13 +6,14 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
-async function processAnnotations(indexId: string, parser: any) {
+async function processAnnotations(indexId: string, parser: any, commit: boolean) {
     let currentParser = parser;
     while (currentParser) {
         const annotations = Array.from(currentParser.iterateAnnotationPageAnnotation());
         if (annotations.length > 0) {
             const payload = createJsonl(annotations);
-            const response = await quickwitClient.post(`${indexId}/ingest`, payload);
+            const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
+            const response = await quickwitClient.post(url, payload);
             if (!response.data) {
                 throw new AnnoSearchValidationError('No response data received from Quickwit');
             }
@@ -24,7 +25,7 @@ async function processAnnotations(indexId: string, parser: any) {
                 throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
             }
         }
-        
+
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
@@ -37,20 +38,21 @@ async function processAnnotations(indexId: string, parser: any) {
             currentParser = null;
         }
     }
+
 }
 
-async function processAnnotationPageRef(indexId: string, annotationPageUrl: string) {
+async function processAnnotationPageRef(indexId: string, annotationPageUrl: string, commit: boolean) {
     const jsonData = await fetchJson(annotationPageUrl);
     const parser = new Maniiifest(jsonData, "AnnotationPage");
-    await processAnnotations(indexId, parser);
+    await processAnnotations(indexId, parser, commit);
 }
 
-async function processAnnotationPage(indexId: string, page: any) {
+async function processAnnotationPage(indexId: string, page: any, commit: boolean) {
     const parser = new Maniiifest(page, "AnnotationPage");
-    await processAnnotations(indexId, parser);
+    await processAnnotations(indexId, parser, commit);
 }
 
-async function processManifest(indexId: string, manifestUrl: string) {
+async function processManifest(indexId: string, manifestUrl: string, commit: boolean) {
     const jsonData = await fetchJson(manifestUrl);
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
@@ -60,14 +62,14 @@ async function processManifest(indexId: string, manifestUrl: string) {
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
         if (page.items) {
-            await processAnnotationPage(indexId, page);
+            await processAnnotationPage(indexId, page, commit);
         } else {
-            await processAnnotationPageRef(indexId, page.id);
+            await processAnnotationPageRef(indexId, page.id, commit);
         }
     }
 }
 
-async function processCollection(indexId: string, collectionUrl: string) {
+async function processCollection(indexId: string, collectionUrl: string, commit: boolean) {
     const jsonData = await fetchJson(collectionUrl);
     const parser = new Maniiifest(jsonData);
     const type = parser.getSpecificationType();
@@ -79,14 +81,14 @@ async function processCollection(indexId: string, collectionUrl: string) {
         const manifestRef = new Maniiifest(item);
         const manifestId = manifestRef.getManifestId();
         if (manifestId) {
-            await processManifest(indexId, manifestId);
+            await processManifest(indexId, manifestId, commit);
         } else {
             throw new AnnoSearchValidationError('Manifest ID is null');
         }
     }
 }
 
-async function processAnnotationCollection(indexId: string, annotationCollectionUrl: string) {
+async function processAnnotationCollection(indexId: string, annotationCollectionUrl: string, commit: boolean) {
     const jsonData = await fetchJson(annotationCollectionUrl);
     const parser = new Maniiifest(jsonData, "AnnotationCollection");
     const type = parser.getAnnotationCollectionType();
@@ -95,26 +97,26 @@ async function processAnnotationCollection(indexId: string, annotationCollection
     }
     const firstPage = parser.getAnnotationCollectionFirst();
     if (typeof firstPage === 'string') { // means it is a URI
-        await processAnnotationPageRef(indexId, firstPage);
+        await processAnnotationPageRef(indexId, firstPage, commit);
     } else {
-        await processAnnotationPage(indexId, firstPage as any);
+        await processAnnotationPage(indexId, firstPage as any, commit);
     }
 }
 
-export async function loadIndex(indexId: string, uri: string, type: string) {
+export async function loadIndex(indexId: string, uri: string, type: string, commit: boolean) {
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
     console.log(`Loading ${type} from ${uri} into index ${indexId}`);
     switch (type) {
         case 'Manifest':
-            await processManifest(indexId, uri);
+            await processManifest(indexId, uri, commit);
             break;
         case 'Collection':
-            await processCollection(indexId, uri);
+            await processCollection(indexId, uri, commit);
             break;
         case 'AnnotationCollection':
-            await processAnnotationCollection(indexId, uri);
+            await processAnnotationCollection(indexId, uri, commit);
             break;
         default:
             throw new AnnoSearchValidationError('unsupported type');
