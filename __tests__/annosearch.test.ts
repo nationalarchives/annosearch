@@ -78,6 +78,28 @@ describe('CLI: serve command', () => {
         const response = await axios.get('http://localhost:3000/test-index/search?q=foobar');
         expect(response.data.items).toEqual([]);
     });
+
+    it('API: should perform a search and return results from one item', async () => {
+
+        // Perform a search for a keyword from the JSON data
+        const response = await axios.get('http://localhost:3000/test-index/search?q=William');
+        expect(response.data.items.length).toBeGreaterThan(0);
+
+        // Validate one of the results
+        const firstItem = response.data.items[0];
+        expect(firstItem).toMatchObject({
+            id: expect.stringContaining('http'),
+            type: 'Annotation',
+            motivation: 'supplementing',
+            body: {
+                type: 'TextualBody',
+                value: expect.stringContaining('William'),
+                format: 'text/plain',
+            },
+            target: expect.any(String),
+        });
+    });
+
 });
 
 describe('CLI: delete command', () => {
