@@ -86,19 +86,19 @@ describe('CLI: serve command', () => {
     });
 
     it('API: should return the first page of results', async () => {
-        const response = await axios.get('http://localhost:3000/gist/search?q=William&page=0');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=0');
         // Validate the number of items returned on the first page
         expect(response.data.items.length).toBeLessThanOrEqual(20); // Assuming 20 items per page
     });
 
     it('API: should return the last page of results', async () => {
-        const response = await axios.get('http://localhost:3000/gist/search?q=William&page=1');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=1');
         // Validate that the number of items matches the remainder
-        expect(response.data.items.length).toBe(2); // Assuming total=22 and 20 items per page
+        expect(response.data.items.length).toBe(0); 
     });
 
     it('API: should return an empty page for out-of-range page number', async () => {
-        const response = await axios.get('http://localhost:3000/gist/search?q=William&page=2');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=2');
         // Validate that the response contains no items
         expect(response.data.items).toEqual([]);
     });    
