@@ -49,14 +49,14 @@ describe('CLI: init command', () => {
 
 describe('CLI: load command', () => {
     it('should load an index successfully', async () => {
-        const { stdout } = await runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/e10bae6350fcf1324e045b78566cd749/raw/f35478c9165aa41697cc9f5f563e07820db5d289/bt209.json --type Manifest');
-        expect(stdout).toContain('Loading Manifest');
+        const { stdout } = await runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/2f4767b74b296064c25d321f61a49480/raw/f227010619c003cb83cc937cacb1b4fcbaef3c68/AnnotationCollection --type AnnotationCollection --commit');
+        expect(stdout).toContain('Loading AnnotationCollection');
     });;
 });
 
 describe('CLI: search command', () => {
     it('should wait until search results are available', async () => {
-        const items = await waitForSearchResults('test-index', 'William', 100000);
+        const items = await waitForSearchResults('test-index', 'annotation', 100000);
         expect(items.length).toBeGreaterThan(0);
     });
 });
@@ -86,19 +86,19 @@ describe('CLI: serve command', () => {
     });
 
     it('API: should return the first page of results', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=0');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=0');
         // Validate the number of items returned on the first page
         expect(response.data.items.length).toBeLessThanOrEqual(20); // Assuming 20 items per page
     });
 
     it('API: should return the last page of results', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=1');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=1');
         // Validate that the number of items matches the remainder
-        expect(response.data.items.length).toBe(0); 
+        expect(response.data.items.length).toBe(5); 
     });
 
     it('API: should return an empty page for out-of-range page number', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/search?q=William&page=2');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=2');
         // Validate that the response contains no items
         expect(response.data.items).toEqual([]);
     });    
@@ -106,7 +106,7 @@ describe('CLI: serve command', () => {
     it('API: should return results from one item', async () => {
 
         // Perform a search for a keyword from the JSON data
-        const response = await axios.get('http://localhost:3000/test-index/search?q=William');
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation');
         expect(response.data.items.length).toBeGreaterThan(0);
 
         // Validate one of the results
@@ -114,10 +114,10 @@ describe('CLI: serve command', () => {
         expect(firstItem).toMatchObject({
             id: expect.stringContaining('http'),
             type: 'Annotation',
-            motivation: 'commenting',
+            motivation: 'highlighting',
             body: {
                 type: 'TextualBody',
-                value: expect.stringContaining('William'),
+                value: expect.stringContaining('Annotation'),
                 format: 'text/plain',
             },
             target: expect.any(String),
