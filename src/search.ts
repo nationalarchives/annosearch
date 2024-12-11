@@ -10,7 +10,7 @@ const quickwitClient = createClient(contentType);
 function buildDateQueryFromString(dateRangesString: string): string {
     // Split the string into an array using space as the delimiter
     const dateRanges = dateRangesString.split(" ");
-    
+
     // Map each range into a Quickwit-compatible query fragment
     return dateRanges
         .map(range => {
@@ -33,6 +33,13 @@ function buildUserQueryFromString(userString: string): string {
         .join(" OR ");
 }
 
+function buildQFromString(qString: string): string {
+    const terms = qString.split(" ");
+    return terms
+        .map(term => `(body.value:"${term}")`)
+        .join(" AND ");
+}
+
 export async function searchIndex(indexId: string, q: string, motivation: string, maxHits: number, page: number, searchUrl: string, date: string, user: string) {
     const startOffset = page * maxHits;
     validateQueryParameter(q);
@@ -42,13 +49,15 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateOffset(startOffset);
     validateMotivation(motivation);
     validateUser(user);
-    const qQuery = `body.value:${q}`;
-    const motivationQuery = motivation ? ` AND motivation:${motivation}` : '';
+
+    const qQuery = buildQFromString(q);
+    const motivationQuery = motivation ? ` AND motivation:"${motivation}"` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
     const userQuery = user ? ` AND (${buildUserQueryFromString(user)})` : '';
-    //console.log(`query:${qQuery}${motivationQuery}${dateQuery}${userQuery}`);
+    const fullQuery = `${qQuery}${motivationQuery}${dateQuery}${userQuery}`;
+    console.log(`Constructed query: ${fullQuery}`);
     const response = await quickwitClient.post(`${indexId}/search`, {
-        query: `${qQuery}${motivationQuery}${dateQuery}${userQuery}`,
+        query: fullQuery,
         max_hits: maxHits,
         start_offset: startOffset,
     });

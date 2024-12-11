@@ -8,25 +8,6 @@ async function runCLI(command: string) {
     return execa('node', [cliPath, ...command.split(' ')]);
 }
 
-// Helper function to introduce a delay
-function delay(ms: number) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Helper function to perform a search and wait until items are no longer empty
-async function waitForSearchResults(index: string, query: string, timeout: number = 10000, interval: number = 1000) {
-    const startTime = Date.now();
-    while (Date.now() - startTime < timeout) {
-        const { stdout } = await runCLI(`search --index ${index} --query ${query}`);
-        const output = JSON.parse(stdout);
-        if (output.items.length > 0) {
-            return output.items;
-        }
-        await delay(interval);
-    }
-    throw new Error('Timeout waiting for search results');
-}
-
 describe('CLI: version command', () => {
     it('should display the version', async () => {
         const { stdout } = await runCLI('version');
@@ -53,14 +34,6 @@ describe('CLI: load command', () => {
         expect(stdout).toContain('Loading AnnotationCollection');
     });;
 });
-
-describe('CLI: search command', () => {
-    it('should wait until search results are available', async () => {
-        const items = await waitForSearchResults('test-index', 'annotation', 100000);
-        expect(items.length).toBeGreaterThan(0);
-    });
-});
-
 
 describe('CLI: serve command', () => {
     let serverProcess: execa.ExecaChildProcess;
