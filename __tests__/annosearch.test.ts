@@ -166,6 +166,53 @@ describe('CLI: serve command', () => {
     //     });
     // });
     
+    it('API: should return a 400 error for invalid page number', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&page=-1')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return a 400 error for missing query parameter', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/search')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return a 404 error for invalid path', async () => {
+        await expect(axios.get('http://localhost:3000/invalid-path')).rejects.toMatchObject({
+            response: { status: 404 },
+        });
+    });
+    
+    it('API: should return a 404 error for invalid method', async () => {
+        await expect(axios.post('http://localhost:3000/version')).rejects.toMatchObject({
+            response: { status: 404 },
+        });
+    });
+
+    it('API: should return 400 error for invalid date range', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&date=invalid')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return 400 error for invalid motivation', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&motivation=invalid')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return 400 error for invalid user', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&user=invalid')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return 404 error for missing index', async () => {
+        await expect(axios.get('http://localhost:3000/missing-index/search?q=annotation')).rejects.toMatchObject({
+            response: { status: 404 },
+        });
+    });
 
 });
 
