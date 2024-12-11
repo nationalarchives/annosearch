@@ -121,23 +121,23 @@ describe('CLI: serve command', () => {
         });
     });
 
-    // it('API: should return results within a specific date range', async () => {
-    //     const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&date=2024-01-01T00:00:00Z/2024-12-31T23:59:59Z');
-    //     // Validate that all items are within the specified date range
-    //     response.data.items.forEach((item: { created: string; }) => {
-    //         const createdDate = new Date(item.created);
-    //         expect(createdDate >= new Date('2024-01-01T00:00:00Z')).toBeTruthy();
-    //         expect(createdDate <= new Date('2024-12-31T23:59:59Z')).toBeTruthy();
-    //     });
-    // });
+    it('API: should return results within a specific date range', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&date=2024-01-01T00:00:00Z/2024-12-31T23:59:59Z');
+        // Validate that all items are within the specified date range
+        response.data.items.forEach((item: { created: string; }) => {
+            const createdDate = new Date(item.created);
+            expect(createdDate >= new Date('2024-01-01T00:00:00Z')).toBeTruthy();
+            expect(createdDate <= new Date('2024-12-31T23:59:59Z')).toBeTruthy();
+        });
+    });
 
-    // it('API: should return results created by a specific user', async () => {
-    //     const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&user=http://example.org/users/1');
-    //     // Validate that all items were created by the specified user
-    //     response.data.items.forEach((item: { creator: { id: string; }; }) => {
-    //         expect(item.creator.id).toBe('http://example.org/users/1');
-    //     });
-    // });
+    it('API: should return results created by a specific user', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&user=http://example.org/users/1');
+        // Validate that all items were created by the specified user
+        response.data.items.forEach((item: { creator: { id: string; }; }) => {
+            expect(item.creator.id).toBe('http://example.org/users/1');
+        });
+    });
     
     it('API: should return a 400 error for invalid page number', async () => {
         await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&page=-1')).rejects.toMatchObject({

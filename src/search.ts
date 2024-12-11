@@ -55,7 +55,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
     const userQuery = user ? ` AND (${buildUserQueryFromString(user)})` : '';
     const fullQuery = `${qQuery}${motivationQuery}${dateQuery}${userQuery}`;
-    console.log(`Constructed query: ${fullQuery}`);
+    //console.log(`Constructed query: ${fullQuery}`);
     const response = await quickwitClient.post(`${indexId}/search`, {
         query: fullQuery,
         max_hits: maxHits,
