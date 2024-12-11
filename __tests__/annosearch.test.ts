@@ -124,6 +124,40 @@ describe('CLI: serve command', () => {
         });
     });
 
+    it('API: should validate the total count in partOf', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation');
+        // Validate the partOf.total matches the sum of all pages
+        expect(response.data.partOf.total).toBe(25); // Assuming 25 total items
+    });
+
+    it('API: should validate first and last page links in partOf', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation');
+        // Validate the first page link
+        expect(response.data.partOf.first.id).toContain('page=0');
+        expect(response.data.partOf.first.type).toBe('AnnotationPage');
+        // Validate the last page link
+        expect(response.data.partOf.last.id).toContain('page=1');
+        expect(response.data.partOf.last.type).toBe('AnnotationPage');
+    });
+
+    it('API: should return results with specific motivation', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&motivation=highlighting');
+        // Validate that all returned items have the specified motivation
+        response.data.items.forEach((item: { motivation: string; }) => {
+            expect(item.motivation).toBe('highlighting');
+        });
+    });
+
+    // it('API: should return results within a specific date range', async () => {
+    //     const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&date=2024-01-01T00:00:00Z/2024-12-31T23:59:59Z');
+    //     // Validate that all items are within the specified date range
+    //     response.data.items.forEach((item: { created: string; }) => {
+    //         const createdDate = new Date(item.created);
+    //         expect(createdDate >= new Date('2024-01-01T00:00:00Z')).toBeTruthy();
+    //         expect(createdDate <= new Date('2024-12-31T23:59:59Z')).toBeTruthy();
+    //     });
+    // });
+
 });
 
 describe('CLI: delete command', () => {

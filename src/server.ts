@@ -18,14 +18,12 @@ export async function serve(client: AnnoSearch) {
 
     app.get('/:index/search', async (req, res) => {
         try {
-            // Sanitize path parameter
-            const index = validator.escape(req.params.index || '');
-            // Sanitize query parameters
-            const q = validator.escape(req.query.q as string || '');
-            const page = validator.toInt(req.query.page as string || '0');
-            const motivation = validator.escape(req.query.motivation as string || '');
-            const date = validator.escape(req.query.date as string || '');
-            const user = validator.escape(req.query.user as string || '');
+            const index = req.params.index || '';
+            const q = req.query.q as string || '';
+            const page = parseInt(req.query.page as string || '0', 10);
+            const motivation = req.query.motivation as string || '';
+            const date = req.query.date as string || '';
+            const user = req.query.user as string || '';
             const results = await client.searchIndex(index, q, motivation, page, date, user);
             res.json(results);
         } catch (error: any) {

@@ -56,6 +56,6 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     if (response.status === 200 && response.data) {
         return makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
     } else {
-        throw new AnnoSearchValidationError('Failed to delete index');
+        throw new AnnoSearchValidationError('Failed to search index');
     }
 }
