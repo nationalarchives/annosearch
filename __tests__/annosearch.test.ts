@@ -158,6 +158,15 @@ describe('CLI: serve command', () => {
     //     });
     // });
 
+    // it('API: should return results created by a specific user', async () => {
+    //     const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&user=http://example.org/users/1');
+    //     // Validate that all items were created by the specified user
+    //     response.data.items.forEach((item: { creator: { id: string; }; }) => {
+    //         expect(item.creator.id).toBe('http://example.org/users/1');
+    //     });
+    // });
+    
+
 });
 
 describe('CLI: delete command', () => {

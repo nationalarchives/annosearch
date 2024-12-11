@@ -29,7 +29,7 @@ function buildUserQueryFromString(userString: string): string {
 
     // Map each user into a Quickwit-compatible query fragment
     return users
-        .map(user => `(creator:"${user}" OR creator.name:"${user}")`)
+        .map(user => `(creator:"${user}" OR creator.id:"${user}")`)
         .join(" OR ");
 }
 
