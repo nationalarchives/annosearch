@@ -45,11 +45,14 @@ annosearch delete --index <index-id>
 Perform a search on a specified index.
 
 ```bash
-annosearch search --index <index-id> --query <search-query> [--page <page-number>]
+annosearch search --index <index-id> --query <search-query> [--page <page-number>] [--motivation <motivation>] [--date <date-ranges>] [--user <users>]
 ```
 
 - `query`: The search query string.
 - `page`: Optional page number (defaults to 0).
+- `motivation`: Optional space separated list of motivation terms.
+- `date`: Optional space separated list of date ranges.
+- `user`: Optional space separated list of URIs that are the identities of users. 
 
 #### `serve`
 
@@ -88,6 +91,11 @@ Configure AnnoSearch by setting the following environment variables:
   - **Default**: `http://localhost:3000`
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
+
+## Todo
+
+- Implement the autocomplete service
+- Implement extended API responses
 
 
 ## License
