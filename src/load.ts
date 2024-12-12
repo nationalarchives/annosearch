@@ -107,6 +107,13 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
+
+    // we won't allow loading data into an index that already contains data
+    const indexContents = await quickwitClient.get(`/indexes/${indexId}/describe`);
+    if (indexContents.data.num_published_docs > 0) {
+        throw new AnnoSearchValidationError(`Index ${indexId} already contains data`);
+    }
+    
     console.log(`Loading ${type} from ${uri} into index ${indexId}`);
     switch (type) {
         case 'Manifest':
