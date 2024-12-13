@@ -1,7 +1,7 @@
 
 # Annotation Search
 
-AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to efficiently index and query [W3C Web Annotation](https://www.w3.org/TR/annotation-model/) data. Quickwit’s fast, scalable search engine enables AnnoSearch to handle large volumes of data and execute complex, full-text queries quickly. AnnoSearch can load data directly from [IIIF](https://iiif.io/) resources and web annotation servers such as [Miiify](https://github.com/nationalarchives/miiify).
+AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to efficiently index and query [W3C Web Annotation](https://www.w3.org/TR/annotation-model/) data. AnnoSearch can load data directly from [IIIF](https://iiif.io/) resources and web annotation servers such as [Miiify](https://github.com/nationalarchives/miiify).
 
 ## Usage
 
