@@ -138,6 +138,22 @@ describe('CLI: serve command', () => {
             expect(item.creator.id).toBe('http://example.org/users/1');
         });
     });
+
+    it('API: should return an empty result for excessively large page number', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=100');
+        expect(response.data.items).toEqual([]);
+    });
+
+    it('API: should return filtered results for multiple parameters', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&motivation=highlighting&date=2024-01-01T00:00:00Z/2024-12-31T23:59:59Z&user=http://example.org/users/1');
+        response.data.items.forEach((item: any) => {
+            expect(item.motivation).toBe('highlighting');
+            const createdDate = new Date(item.created);
+            expect(createdDate >= new Date('2024-01-01T00:00:00Z')).toBeTruthy();
+            expect(createdDate <= new Date('2024-12-31T23:59:59Z')).toBeTruthy();
+            expect(item.creator.id).toBe('http://example.org/users/1');
+        });
+    });
     
     it('API: should return a 400 error for invalid page number', async () => {
         await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&page=-1')).rejects.toMatchObject({
@@ -188,6 +204,16 @@ describe('CLI: serve command', () => {
     });
 
 });
+
+describe('CLI: invalid command', () => {
+    it('should return an error for an unknown command', async () => {
+        await expect(runCLI('unknown-command')).rejects.toMatchObject({
+            stderr: expect.stringContaining('Unknown argument: unknown-command'),
+        });
+    });
+});
+
+
 
 describe('CLI: delete command', () => {
     it('should delete an index successfully', async () => {
