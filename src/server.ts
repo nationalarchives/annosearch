@@ -7,7 +7,6 @@ import { handleWebError } from './utils';
 import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError } from './errors';
-import validator from 'validator';
 
 export async function serve(client: AnnoSearch) {
     const app = express();
