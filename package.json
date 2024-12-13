@@ -6,7 +6,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "build": "tsc && cp-cli src/index-config.yaml dist/index-config.yaml",
+    "build": "tsc && node copy-files.mjs",
     "start": "ts-node src/index.ts",
     "test": "jest"
   },
@@ -27,7 +27,6 @@
     "@types/node": "^22.10.2",
     "@types/pino": "^7.0.4",
     "@types/yargs": "^17.0.33",
-    "cp-cli": "^2.0.0",
     "typescript": "^5.7.2"
   },
   "dependencies": {
