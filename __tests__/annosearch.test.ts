@@ -1,6 +1,8 @@
 import execa from 'execa';
 import path from 'path';
 import axios from 'axios';
+import fs from 'fs';
+import nock from 'nock';
 
 const cliPath = path.resolve(__dirname, '../dist/index.js');
 
@@ -29,10 +31,27 @@ describe('CLI: init command', () => {
 });
 
 describe('CLI: load command', () => {
-    it('should load an index successfully', async () => {
-        const { stdout } = await runCLI('load --index test-index --uri https://gist.githubusercontent.com/jptmoore/2f4767b74b296064c25d321f61a49480/raw/f227010619c003cb83cc937cacb1b4fcbaef3c68/AnnotationCollection --type AnnotationCollection --commit');
+    beforeEach(() => {
+        // Read the JSON file
+        const mockFilePath = path.resolve(__dirname, 'AnnotationCollection.json');
+        const fileContent = fs.readFileSync(mockFilePath, 'utf-8');
+
+        // Mock the remote URI to return the file content
+        nock('https://gist.githubusercontent.com')
+            .get('/jptmoore/2f4767b74b296064c25d321f61a49480/raw/f227010619c003cb83cc937cacb1b4fcbaef3c68/AnnotationCollection')
+            .reply(200, JSON.parse(fileContent));
+    });
+
+    afterEach(() => {
+        nock.cleanAll(); // Clean up mocks after each test
+    });
+
+    it('should load an index successfully from the mocked URI', async () => {
+        const { stdout } = await runCLI(
+            'load --index test-index --uri https://gist.githubusercontent.com/jptmoore/2f4767b74b296064c25d321f61a49480/raw/f227010619c003cb83cc937cacb1b4fcbaef3c68/AnnotationCollection --type AnnotationCollection --commit'
+        );
         expect(stdout).toContain('Loading AnnotationCollection');
-    });;
+    });
 });
 
 describe('CLI: serve command', () => {
@@ -67,15 +86,15 @@ describe('CLI: serve command', () => {
     it('API: should return the last page of results', async () => {
         const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=1');
         // Validate that the number of items matches the remainder
-        expect(response.data.items.length).toBe(5); 
+        expect(response.data.items.length).toBe(5);
     });
 
     it('API: should return an empty page for out-of-range page number', async () => {
         const response = await axios.get('http://localhost:3000/test-index/search?q=annotation&page=2');
         // Validate that the response contains no items
         expect(response.data.items).toEqual([]);
-    });    
-    
+    });
+
     it('API: should return results from one item', async () => {
 
         // Perform a search for a keyword from the JSON data
@@ -154,7 +173,7 @@ describe('CLI: serve command', () => {
             expect(item.creator.id).toBe('http://example.org/users/1');
         });
     });
-    
+
     it('API: should return a 400 error for invalid page number', async () => {
         await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&page=-1')).rejects.toMatchObject({
             response: { status: 400 },
@@ -172,7 +191,7 @@ describe('CLI: serve command', () => {
             response: { status: 404 },
         });
     });
-    
+
     it('API: should return a 404 error for invalid method', async () => {
         await expect(axios.post('http://localhost:3000/version')).rejects.toMatchObject({
             response: { status: 404 },
