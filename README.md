@@ -24,14 +24,6 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
   "id": "http://localhost:3000/cookbook/search?q=brunnen&page=0",
   "type": "AnnotationPage",
   "startIndex": 0,
-  "items": []
-}
-❯ annosearch search --index cookbook --query brunnen
-{
-  "@context": "http://www.w3.org/ns/anno.jsonld",
-  "id": "http://localhost:3000/cookbook/search?q=brunnen&page=0",
-  "type": "AnnotationPage",
-  "startIndex": 0,
   "items": [
     {
       "body": {
