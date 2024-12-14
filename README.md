@@ -48,7 +48,7 @@ Perform a search on a specified index.
 annosearch search --index <index-id> --query <search-query> [--page <page-number>] [--motivation <motivation>] [--date <date-ranges>] [--user <users>]
 ```
 
-- `query`: The search query string.
+- `query`: A space separated list of search query terms.
 - `page`: Optional page number (defaults to 0).
 - `motivation`: Optional space separated list of motivation terms.
 - `date`: Optional space separated list of date ranges.
