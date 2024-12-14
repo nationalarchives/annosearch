@@ -3,6 +3,52 @@
 
 AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to efficiently index and query [W3C Web Annotation](https://www.w3.org/TR/annotation-model/) data, leveraging a declarative approach to simplify ingestion and management. AnnoSearch can load data directly from [IIIF](https://iiif.io/) resources and web annotation servers such as [Miiify](https://github.com/nationalarchives/miiify).
 
+## Tutorial
+
+We first need to create an index.
+```bash
+❯ annosearch init --index cookbook
+Index created successfully
+```
+We can now load the index with the annotations referenced in a IIIF manifest.
+```bash
+❯ annosearch load --index cookbook --type Manifest --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json
+Loading Manifest from https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json into index cookbook
+|+|
+```
+After Quickwit finishes ingesting and indexing the data we can perform a search.
+```json
+❯ annosearch search --index cookbook --query brunnen
+{
+  "@context": "http://www.w3.org/ns/anno.jsonld",
+  "id": "http://localhost:3000/cookbook/search?q=brunnen&page=0",
+  "type": "AnnotationPage",
+  "startIndex": 0,
+  "items": []
+}
+❯ annosearch search --index cookbook --query brunnen
+{
+  "@context": "http://www.w3.org/ns/anno.jsonld",
+  "id": "http://localhost:3000/cookbook/search?q=brunnen&page=0",
+  "type": "AnnotationPage",
+  "startIndex": 0,
+  "items": [
+    {
+      "body": {
+        "format": "text/plain",
+        "language": "de",
+        "type": "TextualBody",
+        "value": "Göttinger Marktplatz mit Gänseliesel Brunnen"
+      },
+      "id": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1/annopage-2/anno-1",
+      "motivation": "commenting",
+      "target": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1",
+      "type": "Annotation"
+    }
+  ]
+}
+```
+
 ## Usage
 
 Make sure you have Quickwit installed and [running](https://quickwit.io/docs/get-started/quickstart) and then install AnnoSearch.
