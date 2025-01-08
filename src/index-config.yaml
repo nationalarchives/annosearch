@@ -2,18 +2,14 @@ version: "0.8"
 
 doc_mapping:
   mode: dynamic
-  field_mappings:
-    - name: body
-      type: object
-      field_mappings:
-        - name: value
-          type: text
-    - name: motivation
-      type: text
-    - name: created
-      type: datetime
-      fast: true
-    
+  dynamic_mapping:
+    indexed: true
+    stored: true
+    tokenizer: default
+    record: position
+    expand_dots: true
+    fast: true
+
 
 
 
