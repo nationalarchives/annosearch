@@ -1,7 +1,9 @@
 
 # Annotation Search
 
-AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to efficiently index and query [W3C Web Annotation](https://www.w3.org/TR/annotation-model/) data, leveraging a declarative approach to simplify ingestion and management. AnnoSearch can ingest data directly from [IIIF](https://iiif.io/) resources and web annotation servers such as [Miiify](https://github.com/nationalarchives/miiify) and make it available to IIIF viewers through the [IIIF Content Search 2.0 API](https://iiif.io/api/search/2.0/).
+# AnnoSearch
+
+AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to efficiently index and query [W3C Web Annotation](https://www.w3.org/TR/annotation-model/) data. AnnoSearch can ingest data directly from [IIIF](https://iiif.io/) resources such as IIIF collections and web annotation servers such as [Miiify](https://github.com/nationalarchives/miiify) and make it available to IIIF viewers through the [IIIF Content Search 2.0 API](https://iiif.io/api/search/2.0/). Annosearch supports type-safe ingestion using the [Maniiifest](https://github.com/jptmoore/maniiifest) library. 
 
 ## Tutorial
 
