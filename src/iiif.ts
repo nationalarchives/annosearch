@@ -11,7 +11,7 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
     const id = `${searchUrl}/${indexId}/search?q=${queryParam}${motivationParam}${dateParam}${userParam}`;
 
     return {
-        "@context": "http://www.w3.org/ns/anno.jsonld",
+        "@context": "http://iiif.io/api/search/2/context.json",
         id: `${id}&page=${page}`,
         type: "AnnotationPage",
         partOf: totalPages > 1 ? {
