@@ -36,7 +36,13 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
       },
       "id": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1/annopage-2/anno-1",
       "motivation": "commenting",
-      "target": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1",
+      "target": {
+        "id": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1",
+        "partOf": {
+          "id": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json",
+          "type": "Manifest"
+        }
+      },
       "type": "Annotation"
     }
   ]
