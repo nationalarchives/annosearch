@@ -6,10 +6,43 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
-async function processAnnotations(indexId: string, parser: any, commit: boolean) {
+
+function modifyAnnotationTarget(annotation: any, uri: string, type: string) {
+    const parser = new Maniiifest(annotation, "Annotation");
+    const target = parser.getAnnotationTarget();
+    const partOf = {
+        id: uri,
+        type: type,
+    };
+    const modifySingleTarget = (singleTarget: any) => {
+        if (typeof singleTarget === "string") {
+            // If the target is a string, return it wrapped in the specified object structure
+            return {id: singleTarget, partOf: partOf};
+        } else if (typeof singleTarget === "object" && singleTarget !== null) {
+            // If the target is already an object, add or merge the partOf field
+            return {...singleTarget, partOf: partOf};
+        }
+        // Return the target as-is for unexpected types
+        return singleTarget;
+    };
+    if (Array.isArray(target)) {
+        return {target: target.map(modifySingleTarget)};
+    } else {
+        return {target: modifySingleTarget(target)};
+    }
+}
+
+function* processAnnotationsTarget(parser: any, uri: string, type: string) {
+    for (const annotation of parser.iterateAnnotationPageAnnotation()) {
+        const modifiedTarget = modifyAnnotationTarget(annotation, uri, type).target;
+        yield {...annotation, target: modifiedTarget};
+    }
+}
+
+async function processAnnotations(indexId: string, uri: string, type: string, parser: any, commit: boolean) {
     let currentParser = parser;
     while (currentParser) {
-        const annotations = Array.from(currentParser.iterateAnnotationPageAnnotation());
+        const annotations = Array.from(processAnnotationsTarget(currentParser, uri, type));
         if (annotations.length > 0) {
             const payload = createJsonl(annotations);
             const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
@@ -41,15 +74,15 @@ async function processAnnotations(indexId: string, parser: any, commit: boolean)
 
 }
 
-async function processAnnotationPageRef(indexId: string, annotationPageUrl: string, commit: boolean) {
+async function processAnnotationPageRef(indexId: string, uri: string, type: string, annotationPageUrl: string, commit: boolean) {
     const jsonData = await fetchJson(annotationPageUrl);
     const parser = new Maniiifest(jsonData, "AnnotationPage");
-    await processAnnotations(indexId, parser, commit);
+    await processAnnotations(indexId, uri, type, parser, commit);
 }
 
-async function processAnnotationPage(indexId: string, page: any, commit: boolean) {
+async function processAnnotationPage(indexId: string, uri: string, type: string, page: any, commit: boolean) {
     const parser = new Maniiifest(page, "AnnotationPage");
-    await processAnnotations(indexId, parser, commit);
+    await processAnnotations(indexId, uri, type, parser, commit);
 }
 
 async function processManifest(indexId: string, manifestUrl: string, commit: boolean) {
@@ -62,9 +95,9 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
     for (const page of annotationPages) {
         if (page.items) {
-            await processAnnotationPage(indexId, page, commit);
+            await processAnnotationPage(indexId, manifestUrl, type, page, commit);
         } else {
-            await processAnnotationPageRef(indexId, page.id, commit);
+            await processAnnotationPageRef(indexId, manifestUrl, type, page.id, commit);
         }
     }
 }
@@ -97,9 +130,9 @@ async function processAnnotationCollection(indexId: string, annotationCollection
     }
     const firstPage = parser.getAnnotationCollectionFirst();
     if (typeof firstPage === 'string') { // means it is a URI
-        await processAnnotationPageRef(indexId, firstPage, commit);
+        await processAnnotationPageRef(indexId, annotationCollectionUrl, type, firstPage, commit);
     } else {
-        await processAnnotationPage(indexId, firstPage as any, commit);
+        await processAnnotationPage(indexId, annotationCollectionUrl, type, firstPage as any, commit);
     }
 }
 
@@ -113,7 +146,7 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
     if (indexContents.data.num_published_docs > 0) {
         throw new AnnoSearchValidationError(`Index ${indexId} already contains data`);
     }
-    
+
     console.log(`Loading ${type} from ${uri} into index ${indexId}`);
     switch (type) {
         case 'Manifest':
