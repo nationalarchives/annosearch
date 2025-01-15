@@ -20,8 +20,7 @@ function modifyConfig(config: any, indexId: string) {
 }
 
 
-// Initialization function
-export async function initIndex(indexId: string) {
+async function initIndexWorker(indexId: string) {
     if (!indexId.trim()) {
         throw new AnnoSearchValidationError('Invalid index parameter');
     }
@@ -35,4 +34,9 @@ export async function initIndex(indexId: string) {
         throw new AnnoSearchValidationError('Failed to create index');
     }
 
+}
+
+export async function initIndex(indexId: string) {
+    await initIndexWorker(indexId + '_annotations');
+    await initIndexWorker(indexId + '_autocomplete');
 }

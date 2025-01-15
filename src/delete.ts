@@ -4,7 +4,7 @@ import { AnnoSearchValidationError } from './errors';
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
 
-export async function deleteIndex(indexId: string) {
+async function deleteIndexWorker(indexId: string) {
     if (!indexId.trim()) {
         throw new AnnoSearchValidationError('Invalid index parameter');
     }
@@ -14,4 +14,9 @@ export async function deleteIndex(indexId: string) {
     } else {
         throw new AnnoSearchValidationError('Failed to delete index');
     }
+}
+
+export async function deleteIndex(indexId: string) {
+    await deleteIndexWorker(indexId + '_annotations');
+    await deleteIndexWorker(indexId + '_autocomplete');
 }
