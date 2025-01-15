@@ -34,37 +34,39 @@ function modifyAnnotationTarget(parser: any, uri: string, type: string) {
     const modifySingleTarget = (singleTarget: any) => {
         if (typeof singleTarget === "string") {
             // If the target is a string, return it wrapped in the specified object structure
-            return {id: singleTarget, partOf: partOf};
+            return { id: singleTarget, partOf: partOf };
         } else if (typeof singleTarget === "object" && singleTarget !== null) {
             // If the target is already an object, add or merge the partOf field
-            return {...singleTarget, partOf: partOf};
+            return { ...singleTarget, partOf: partOf };
         }
         // Return the target as-is for unexpected types
         return singleTarget;
     };
     if (Array.isArray(target)) {
-        return {target: target.map(modifySingleTarget)};
+        return { target: target.map(modifySingleTarget) };
     } else {
-        return {target: modifySingleTarget(target)};
+        return { target: modifySingleTarget(target) };
     }
 }
 
 function* processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
         for (const term of body.value.split(/\s+/)) {
-            const normalizedTerm = term.trim().toLowerCase();
+            const normalizedTerm = term.trim().toLowerCase(); // Normalize the term
             if (normalizedTerm) {
-                yield { "id": normalizedTerm };
+                yield { term: normalizedTerm };
             }
         }
     }
 }
 
+
+
 function* processAnnotationsWorker(parser: any, uri: string, type: string) {
     for (const annotation of parser.iterateAnnotationPageAnnotation()) {
         const annotation_parser = new Maniiifest(annotation, "Annotation");
         const modifiedTarget = modifyAnnotationTarget(annotation_parser, uri, type).target;
-        yield {...annotation, target: modifiedTarget};
+        yield { ...annotation, target: modifiedTarget };
     }
 }
 
@@ -73,8 +75,8 @@ async function processAnnotations(indexId: string, uri: string, type: string, pa
     while (currentParser) {
         const terms = Array.from(processAutocompleteTerms(currentParser));
         const annotations = Array.from(processAnnotationsWorker(currentParser, uri, type));
-        await ingestData(indexId+'_autocomplete', terms, commit);
-        await ingestData(indexId, annotations, commit);
+        await ingestData(indexId + '_autocomplete', terms, commit);
+        await ingestData(indexId + '_annotations', annotations, commit);
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
@@ -158,7 +160,7 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
     }
 
     // we won't allow loading data into an index that already contains data
-    const indexContents = await quickwitClient.get(`/indexes/${indexId}/describe`);
+    const indexContents = await quickwitClient.get(`/indexes/${indexId + '_annotations'}/describe`);
     if (indexContents.data.num_published_docs > 0) {
         throw new AnnoSearchValidationError(`Index ${indexId} already contains data`);
     }

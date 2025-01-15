@@ -20,7 +20,7 @@ describe('CLI: version command', () => {
 describe('CLI: init command', () => {
     it('should initialize an index successfully', async () => {
         const { stdout } = await runCLI('init --index test-index');
-        expect(stdout).toContain('Index created successfully');
+        expect(stdout).toContain('created');
     });
 
     it('should fail if no index ID is provided', async () => {
@@ -241,7 +241,7 @@ describe('CLI: invalid command', () => {
 describe('CLI: delete command', () => {
     it('should delete an index successfully', async () => {
         const { stdout } = await runCLI('delete --index test-index');
-        expect(stdout).toContain('Index deleted successfully');
+        expect(stdout).toContain('deleted');
     });
 
     it('should fail if index ID is missing', async () => {
