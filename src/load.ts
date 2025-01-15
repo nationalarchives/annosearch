@@ -52,15 +52,13 @@ function modifyAnnotationTarget(parser: any, uri: string, type: string) {
 function* processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
         for (const term of body.value.split(/\s+/)) {
-            const normalizedTerm = term.trim().toLowerCase(); // Normalize the term
+            const normalizedTerm = term.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
             if (normalizedTerm) {
                 yield { term: normalizedTerm };
             }
         }
     }
 }
-
-
 
 function* processAnnotationsWorker(parser: any, uri: string, type: string) {
     for (const annotation of parser.iterateAnnotationPageAnnotation()) {
