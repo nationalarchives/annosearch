@@ -173,10 +173,8 @@ async function processAnnotationCollection(indexId: string, annotationCollection
 }
 
 async function ingestAutocompleteTerms(indexId: string, commit: boolean) {
-    console.log('Ingesting autocomplete terms');
     const chunks = chunkMapToJson(termFrequencies, 1000);
     for (const chunk of chunks) {
-        console.log('|' + '+'.repeat(chunk.length) + '|');
         await ingestData(indexId + '_autocomplete', chunk, commit);
     }
 }
