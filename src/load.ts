@@ -6,6 +6,22 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
+const termFrequencies = new Map<string, number>();
+
+function* chunkMapToJson<K, V>(map: Map<K, V>, chunkSize: number): Generator<{ term: K; frequency: V }[]> {
+    let chunk: { term: K; frequency: V }[] = [];
+    for (const [term, frequency] of map.entries()) {
+        chunk.push({ term, frequency }); 
+        if (chunk.length === chunkSize) {
+            yield chunk; 
+            chunk = []; 
+        }
+    }
+    if (chunk.length > 0) {
+        yield chunk; 
+    }
+}
+
 async function ingestData<T>(indexId: string, annotations: T[], commit: boolean): Promise<void> {
     if (annotations.length > 0) {
         const payload = createJsonl(annotations);
@@ -49,12 +65,17 @@ function modifyAnnotationTarget(parser: any, uri: string, type: string) {
     }
 }
 
-function* processAutocompleteTerms(parser: any) {
+
+function incrementTerm(term: string) {
+    termFrequencies.set(term, (termFrequencies.get(term) || 0) + 1);
+}
+
+function processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
         for (const term of body.value.split(/\s+/)) {
             const normalizedTerm = term.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
-            if (normalizedTerm) {
-                yield { term: normalizedTerm };
+            if (normalizedTerm.length >= 3) {
+                incrementTerm(term);
             }
         }
     }
@@ -71,9 +92,8 @@ function* processAnnotationsWorker(parser: any, uri: string, type: string) {
 async function processAnnotations(indexId: string, uri: string, type: string, parser: any, commit: boolean) {
     let currentParser = parser;
     while (currentParser) {
-        const terms = Array.from(processAutocompleteTerms(currentParser));
+        processAutocompleteTerms(currentParser);
         const annotations = Array.from(processAnnotationsWorker(currentParser, uri, type));
-        await ingestData(indexId + '_autocomplete', terms, commit);
         await ingestData(indexId + '_annotations', annotations, commit);
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
@@ -152,6 +172,15 @@ async function processAnnotationCollection(indexId: string, annotationCollection
     }
 }
 
+async function ingestAutocompleteTerms(indexId: string, commit: boolean) {
+    console.log('Ingesting autocomplete terms');
+    const chunks = chunkMapToJson(termFrequencies, 1000);
+    for (const chunk of chunks) {
+        console.log('|' + '+'.repeat(chunk.length) + '|');
+        await ingestData(indexId + '_autocomplete', chunk, commit);
+    }
+}
+
 export async function loadIndex(indexId: string, uri: string, type: string, commit: boolean) {
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
@@ -177,4 +206,8 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
         default:
             throw new AnnoSearchValidationError('unsupported type');
     }
+
+    await ingestAutocompleteTerms(indexId, commit);
+    console.log('Data loaded successfully');
+    
 }
