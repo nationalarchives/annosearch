@@ -6,9 +6,26 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
+async function ingestData<T>(indexId: string, annotations: T[], commit: boolean): Promise<void> {
+    if (annotations.length > 0) {
+        const payload = createJsonl(annotations);
+        const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
+        const response = await quickwitClient.post(url, payload);
+        if (!response.data) {
+            throw new AnnoSearchValidationError('No response data received from Quickwit');
+        }
+        // Check if the response is successful and has data
+        if (response.status === 200 && response.data) {
+            // Print a line of '+' symbols based on the batch length
+            console.log('writing to index ' + indexId);
+            console.log('|' + '+'.repeat(annotations.length) + '|');
+        } else {
+            throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
+        }
+    }
+}
 
-function modifyAnnotationTarget(annotation: any, uri: string, type: string) {
-    const parser = new Maniiifest(annotation, "Annotation");
+function modifyAnnotationTarget(parser: any, uri: string, type: string) {
     const target = parser.getAnnotationTarget();
     const partOf = {
         id: uri,
@@ -32,9 +49,21 @@ function modifyAnnotationTarget(annotation: any, uri: string, type: string) {
     }
 }
 
-function* processAnnotationsTarget(parser: any, uri: string, type: string) {
+function* processAutocompleteTerms(parser: any) {
+    for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
+        for (const term of body.value.split(/\s+/)) {
+            const normalizedTerm = term.trim().toLowerCase();
+            if (normalizedTerm) {
+                yield { "id": normalizedTerm };
+            }
+        }
+    }
+}
+
+function* processAnnotationsWorker(parser: any, uri: string, type: string) {
     for (const annotation of parser.iterateAnnotationPageAnnotation()) {
-        const modifiedTarget = modifyAnnotationTarget(annotation, uri, type).target;
+        const annotation_parser = new Maniiifest(annotation, "Annotation");
+        const modifiedTarget = modifyAnnotationTarget(annotation_parser, uri, type).target;
         yield {...annotation, target: modifiedTarget};
     }
 }
@@ -42,23 +71,10 @@ function* processAnnotationsTarget(parser: any, uri: string, type: string) {
 async function processAnnotations(indexId: string, uri: string, type: string, parser: any, commit: boolean) {
     let currentParser = parser;
     while (currentParser) {
-        const annotations = Array.from(processAnnotationsTarget(currentParser, uri, type));
-        if (annotations.length > 0) {
-            const payload = createJsonl(annotations);
-            const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
-            const response = await quickwitClient.post(url, payload);
-            if (!response.data) {
-                throw new AnnoSearchValidationError('No response data received from Quickwit');
-            }
-            // Check if the response is successful and has data
-            if (response.status === 200 && response.data) {
-                // Print a line of '+' symbols based on the batch length
-                console.log('|' + '+'.repeat(annotations.length) + '|');
-            } else {
-                throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
-            }
-        }
-
+        const terms = Array.from(processAutocompleteTerms(currentParser));
+        const annotations = Array.from(processAnnotationsWorker(currentParser, uri, type));
+        await ingestData(indexId+'_autocomplete', terms, commit);
+        await ingestData(indexId, annotations, commit);
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {

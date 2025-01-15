@@ -63,6 +63,7 @@ async function searchCommand(argv: any) {
 async function initCommand(argv: any) {
     try {
         await client.initIndex(argv.index as string);
+        await client.initIndex(argv.index+'_autocomplete' as string);
     } catch (error) {
         logError(error);
     }
@@ -116,6 +117,7 @@ async function loadOptions(yargs: any) {
 async function deleteCommand(argv: any) {
     try {
         await client.deleteIndex(argv.index as string);
+        await client.deleteIndex(argv.index+'_autocomplete' as string);
     } catch (error) {
         logError(error);
     }

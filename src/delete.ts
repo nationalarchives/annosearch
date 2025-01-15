@@ -10,7 +10,7 @@ export async function deleteIndex(indexId: string) {
     }
     const response = await quickwitClient.delete(`indexes/${indexId}`);
     if (response.status === 200 && response.data) {
-        console.log('Index deleted successfully');
+        console.log(`Index ${indexId} successfully deleted`);
     } else {
         throw new AnnoSearchValidationError('Failed to delete index');
     }
