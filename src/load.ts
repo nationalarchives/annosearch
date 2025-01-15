@@ -73,7 +73,10 @@ function incrementTerm(term: string) {
 function processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
         for (const term of body.value.split(/\s+/)) {
-            const normalizedTerm = term.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
+            const normalizedTerm = term
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9\u00C0-\u024F]/g, ""); // Allow Unicode Latin characters
             if (normalizedTerm.length >= 3) {
                 incrementTerm(normalizedTerm);
             }
