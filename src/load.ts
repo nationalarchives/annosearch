@@ -75,7 +75,7 @@ function processAutocompleteTerms(parser: any) {
         for (const term of body.value.split(/\s+/)) {
             const normalizedTerm = term.trim().toLowerCase().replace(/[^a-z0-9]/g, "")
             if (normalizedTerm.length >= 3) {
-                incrementTerm(term);
+                incrementTerm(normalizedTerm);
             }
         }
     }
