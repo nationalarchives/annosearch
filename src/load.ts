@@ -8,17 +8,22 @@ const quickwitClient = createClient(contentType);
 
 const termFrequencies = new Map<string, number>();
 
-function* chunkMapToJson<K, V>(map: Map<K, V>, chunkSize: number): Generator<{ term: K; frequency: V }[]> {
+function* chunkMapToJson<K, V extends number>(
+    map: Map<K, V>, 
+    chunkSize: number
+): Generator<{ term: K; frequency: V }[]> {
     let chunk: { term: K; frequency: V }[] = [];
     for (const [term, frequency] of map.entries()) {
-        chunk.push({ term, frequency }); 
+        if (frequency > 1) { // Skip entries with a frequency of 1
+            chunk.push({ term, frequency });
+        }
         if (chunk.length === chunkSize) {
-            yield chunk; 
-            chunk = []; 
+            yield chunk;
+            chunk = [];
         }
     }
     if (chunk.length > 0) {
-        yield chunk; 
+        yield chunk;
     }
 }
 
@@ -210,5 +215,5 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
 
     await ingestAutocompleteTerms(indexId, commit);
     console.log('Data loaded successfully');
-    
+
 }
