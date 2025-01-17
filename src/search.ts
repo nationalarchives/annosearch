@@ -1,8 +1,7 @@
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
-import { makeSearchResponse } from './iiif';
+import { makeSearchResponse, makeAutocompleteResponse } from './iiif';
 import { validateSearchQueryParameter, validateAutocompleteQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation, validateUser } from './validate';
-import exp from 'constants';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
@@ -74,7 +73,7 @@ function buildAutocompleteQueryFromString(qString: string): string {
     return `term:${qString}*`
 }
 
-export async function searchAutocomplete(indexId: string, q: string, maxHits: number, searchUrl: string) {
+export async function searchAutocomplete(indexId: string, q: string, maxHits: number, searchUrl: string, ignoredParams: string[]) {
     validateAutocompleteQueryParameter(q);
     validateMaxHits(maxHits);
     const fullQuery = buildAutocompleteQueryFromString(q);
@@ -84,7 +83,7 @@ export async function searchAutocomplete(indexId: string, q: string, maxHits: nu
         max_hits: maxHits,
     });
     if (response.status === 200 && response.data) {
-        return response.data;
+        return makeAutocompleteResponse(response.data, searchUrl, q, ignoredParams);
     } else {
         throw new AnnoSearchValidationError('Failed to search autocomplete index');
     }

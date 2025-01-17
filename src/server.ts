@@ -8,6 +8,19 @@ import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError } from './errors';
 
+export function buildIgnoredTerms(queryParams: Record<string, any>): string[] {
+    const ignoredParams = ['date', 'motivation', 'user', 'min'];
+    const ignoredTerms: string[] = [];
+
+    for (const param of ignoredParams) {
+        if (queryParams.hasOwnProperty(param)) {
+            ignoredTerms.push(param);
+        }
+    }
+
+    return ignoredTerms;
+}
+
 export async function serve(client: AnnoSearch) {
     const app = express();
     const port = client.getPort();
@@ -32,9 +45,10 @@ export async function serve(client: AnnoSearch) {
 
     app.get('/:index/autocomplete', async (req, res) => {
         try {
+            const ignoredParams = buildIgnoredTerms(req.query);
             const index = req.params.index || '';
             const q = req.query.q as string || '';
-            const results = await client.searchAutocomplete(index, q);
+            const results = await client.searchAutocomplete(index, q, ignoredParams);
             res.json(results);
         } catch (error: any) {
             handleWebError(error, res);

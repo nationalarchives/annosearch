@@ -73,8 +73,8 @@ class AnnoSearch {
         return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl, date, user);
     }
     
-    async searchAutocomplete(indexId: string, query: string) {
-        return await autocompleteFunction(indexId, query, this.maxHits, this.searchUrl);
+    async searchAutocomplete(indexId: string, query: string, ignoredParams: string[]) {
+        return await autocompleteFunction(indexId, query, this.maxHits, this.searchUrl, ignoredParams);
     }
 
     async initIndex(indexId: string) {
