@@ -30,6 +30,17 @@ export async function serve(client: AnnoSearch) {
         }
     });
 
+    app.get('/:index/autocomplete', async (req, res) => {
+        try {
+            const index = req.params.index || '';
+            const q = req.query.q as string || '';
+            const results = await client.searchAutocomplete(index, q);
+            res.json(results);
+        } catch (error: any) {
+            handleWebError(error, res);
+        }
+    });
+
     app.get('/version', async (req, res) => {
         try {
             res.json({ version });

@@ -1,7 +1,8 @@
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
 import { makeSearchResponse } from './iiif';
-import { validateQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation, validateUser } from './validate';
+import { validateSearchQueryParameter, validateAutocompleteQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation, validateUser } from './validate';
+import exp from 'constants';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
@@ -33,7 +34,7 @@ function buildUserQueryFromString(userString: string): string {
         .join(" OR ");
 }
 
-function buildQFromString(qString: string): string {
+function buildSearchQueryFromString(qString: string): string {
     const terms = qString.split(" ");
     return terms
         .map(term => `(body.value:"${term}")`)
@@ -42,7 +43,7 @@ function buildQFromString(qString: string): string {
 
 export async function searchIndex(indexId: string, q: string, motivation: string, maxHits: number, page: number, searchUrl: string, date: string, user: string) {
     const startOffset = page * maxHits;
-    validateQueryParameter(q);
+    validateSearchQueryParameter(q);
     validatePageNumber(page);
     validateMaxHits(maxHits);
     validateDateRanges(date);
@@ -50,7 +51,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateMotivation(motivation);
     validateUser(user);
 
-    const qQuery = buildQFromString(q);
+    const qQuery = buildSearchQueryFromString(q);
     const motivationQuery = motivation ? ` AND motivation:"${motivation}"` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
     const userQuery = user ? ` AND (${buildUserQueryFromString(user)})` : '';
@@ -66,5 +67,25 @@ export async function searchIndex(indexId: string, q: string, motivation: string
         return makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
     } else {
         throw new AnnoSearchValidationError('Failed to search index');
+    }
+}
+
+function buildAutocompleteQueryFromString(qString: string): string {
+    return `term:${qString}*`
+}
+
+export async function searchAutocomplete(indexId: string, q: string, maxHits: number, searchUrl: string) {
+    validateAutocompleteQueryParameter(q);
+    validateMaxHits(maxHits);
+    const fullQuery = buildAutocompleteQueryFromString(q);
+    const response = await quickwitClient.post(`${indexId + '_autocomplete'}/search`, {
+        query: fullQuery,
+        sort_by: "frequency",
+        max_hits: maxHits,
+    });
+    if (response.status === 200 && response.data) {
+        return response.data;
+    } else {
+        throw new AnnoSearchValidationError('Failed to search autocomplete index');
     }
 }

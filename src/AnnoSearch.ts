@@ -1,4 +1,5 @@
 import { searchIndex as searchFunction } from './search';
+import { searchAutocomplete as autocompleteFunction } from './search';
 import { initIndex as initFunction } from './init';
 import { deleteIndex as deleteFunction } from './delete';
 import { loadIndex as loadFunction } from './load';
@@ -70,7 +71,11 @@ class AnnoSearch {
 
     async searchIndex(indexId: string, query: string, motivation: string, page: number, date: string, user: string) {
         return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl, date, user);
-    }    
+    }
+    
+    async searchAutocomplete(indexId: string, query: string) {
+        return await autocompleteFunction(indexId, query, this.maxHits, this.searchUrl);
+    }
 
     async initIndex(indexId: string) {
         return await initFunction(indexId);
