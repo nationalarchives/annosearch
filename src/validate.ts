@@ -1,4 +1,5 @@
 import { AnnoSearchValidationError } from "./errors";
+import { normalizeTerm } from "./utils";
 
 export const motivations = [
     'painting',
@@ -12,39 +13,36 @@ export const motivations = [
 
 export function validateSearchQueryParameter(query: string): void {
     const trimmedQuery = query.trim();
-
     if (!trimmedQuery) {
         throw new AnnoSearchValidationError('Missing query parameter.');
     }
-
     const minKeywordLength = 3;
     const whitelistedShortKeywords = new Set(["uk", "ai", "us"]);
-    const invalidCharPattern = /[^\p{L}\p{N}\-]/u; // Allow letters, numbers, and hyphens
-
     const keywords = trimmedQuery.split(/\s+/);
     for (const keyword of keywords) {
-        if (keyword.length < minKeywordLength && !whitelistedShortKeywords.has(keyword.toLowerCase())) {
+        const normalizedKeyword = normalizeTerm(keyword);
+        if (normalizedKeyword.length < minKeywordLength && !whitelistedShortKeywords.has(normalizedKeyword)) {
             throw new AnnoSearchValidationError(`Keyword "${keyword}" must be at least ${minKeywordLength} characters long.`);
         }
-        if (invalidCharPattern.test(keyword)) {
-            throw new AnnoSearchValidationError(`Keyword "${keyword}" contains invalid characters.`);
+        if (!normalizedKeyword) {
+            throw new AnnoSearchValidationError(`Keyword "${keyword}" contains invalid characters and is not valid after normalization.`);
         }
     }
 }
 
-export function validateAutocompleteQueryParameter(query: string): void {
-    const trimmedQuery = query.trim();
-    const minQueryLength = 3;
-    const invalidCharPattern = /[^\p{L}\p{N}\-]/u; // Allow Latin letters, numbers, and hyphens
 
-    if (!trimmedQuery) {
-        throw new AnnoSearchValidationError('Missing autocomplete query parameter.');
+export function validateAutocompleteQueryParameter(query: string): void {
+    const minQueryLength = 3;
+    const trimmedQuery = query.trim();
+    const normalizedQuery = normalizeTerm(trimmedQuery);
+    if (!normalizedQuery) {
+        throw new AnnoSearchValidationError('Missing autocomplete query parameter after normalization.');
     }
-    if (trimmedQuery.length < minQueryLength) {
+    if (/\s/.test(trimmedQuery)) {
+        throw new AnnoSearchValidationError('Autocomplete query must not contain spaces.');
+    }
+    if (normalizedQuery.length < minQueryLength) {
         throw new AnnoSearchValidationError(`Autocomplete query must be at least ${minQueryLength} characters long.`);
-    }
-    if (invalidCharPattern.test(trimmedQuery)) {
-        throw new AnnoSearchValidationError('Autocomplete query contains invalid characters. Only Latin letters, numbers, and hyphens are allowed.');
     }
 }
 

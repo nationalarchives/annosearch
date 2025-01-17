@@ -101,3 +101,10 @@ export function createJsonl(data: unknown | unknown[]): string {
         return JSON.stringify(data) + '\n';
     }
 }
+
+export function normalizeTerm(term: string): string {
+    return term
+        .trim()
+        .toLowerCase()
+        .replace(/[^\p{L}\p{N}'\-.]/gu, ""); // Retain letters, numbers, apostrophes, hyphens, periods
+}

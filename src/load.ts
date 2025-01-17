@@ -1,5 +1,5 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl } from './utils';
+import { fetchJson, createJsonl, normalizeTerm } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { createClient } from './quickwit';
 
@@ -8,15 +8,13 @@ const quickwitClient = createClient(contentType);
 
 const termFrequencies = new Map<string, number>();
 
-function* chunkMapToJson<K, V extends number>(
-    map: Map<K, V>, 
+function* chunkMapToJson<K, V>(
+    map: Map<K, V>,
     chunkSize: number
 ): Generator<{ term: K; frequency: V }[]> {
     let chunk: { term: K; frequency: V }[] = [];
     for (const [term, frequency] of map.entries()) {
-        if (frequency > 1) { // Skip entries with a frequency of 1
-            chunk.push({ term, frequency });
-        }
+        chunk.push({ term, frequency });
         if (chunk.length === chunkSize) {
             yield chunk;
             chunk = [];
@@ -78,10 +76,7 @@ function incrementTerm(term: string) {
 function processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
         for (const term of body.value.split(/\s+/)) {
-            const normalizedTerm = term
-                .trim()
-                .toLowerCase()
-                .replace(/[^a-z0-9\u00C0-\u024F]/g, ""); // Allow Unicode Latin characters
+            const normalizedTerm = normalizeTerm(term);
             if (normalizedTerm.length > 3) {
                 incrementTerm(normalizedTerm);
             }
