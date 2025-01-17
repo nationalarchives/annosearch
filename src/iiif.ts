@@ -35,3 +35,19 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
         prev: prevPage !== null ? `${id}&page=${prevPage}` : undefined,
     };
 }
+
+export function makeAutocompleteResponse(indexId: string, data: any, searchUrl: string, query: string, ignoredParams: string[]): any {
+    const response: any = {
+        "@context": "http://iiif.io/api/search/2/context.json",
+        id: `${searchUrl}/${indexId}/autocomplete?q=${encodeURIComponent(query)}`,
+        type: "TermPage",
+        ...(ignoredParams.length > 0 && { ignored: ignoredParams }), // Add ignored if it exists
+        items: data.hits.map((hit: any) => ({
+            value: hit.term
+        })),
+    };
+
+    return response;
+}
+
+

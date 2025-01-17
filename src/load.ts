@@ -6,9 +6,42 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
+const termFrequencies = new Map<string, number>();
 
-function modifyAnnotationTarget(annotation: any, uri: string, type: string) {
-    const parser = new Maniiifest(annotation, "Annotation");
+function* chunkMapToJson<K, V>(map: Map<K, V>, chunkSize: number): Generator<{ term: K; frequency: V }[]> {
+    let chunk: { term: K; frequency: V }[] = [];
+    for (const [term, frequency] of map.entries()) {
+        chunk.push({ term, frequency }); 
+        if (chunk.length === chunkSize) {
+            yield chunk; 
+            chunk = []; 
+        }
+    }
+    if (chunk.length > 0) {
+        yield chunk; 
+    }
+}
+
+async function ingestData<T>(indexId: string, annotations: T[], commit: boolean): Promise<void> {
+    if (annotations.length > 0) {
+        const payload = createJsonl(annotations);
+        const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
+        const response = await quickwitClient.post(url, payload);
+        if (!response.data) {
+            throw new AnnoSearchValidationError('No response data received from Quickwit');
+        }
+        // Check if the response is successful and has data
+        if (response.status === 200 && response.data) {
+            // Print a line of '+' symbols based on the batch length
+            //console.log('writing to index ' + indexId);
+            //console.log('|' + '+'.repeat(annotations.length) + '|');
+        } else {
+            throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
+        }
+    }
+}
+
+function modifyAnnotationTarget(parser: any, uri: string, type: string) {
     const target = parser.getAnnotationTarget();
     const partOf = {
         id: uri,
@@ -17,48 +50,54 @@ function modifyAnnotationTarget(annotation: any, uri: string, type: string) {
     const modifySingleTarget = (singleTarget: any) => {
         if (typeof singleTarget === "string") {
             // If the target is a string, return it wrapped in the specified object structure
-            return {id: singleTarget, partOf: partOf};
+            return { id: singleTarget, partOf: partOf };
         } else if (typeof singleTarget === "object" && singleTarget !== null) {
             // If the target is already an object, add or merge the partOf field
-            return {...singleTarget, partOf: partOf};
+            return { ...singleTarget, partOf: partOf };
         }
         // Return the target as-is for unexpected types
         return singleTarget;
     };
     if (Array.isArray(target)) {
-        return {target: target.map(modifySingleTarget)};
+        return { target: target.map(modifySingleTarget) };
     } else {
-        return {target: modifySingleTarget(target)};
+        return { target: modifySingleTarget(target) };
     }
 }
 
-function* processAnnotationsTarget(parser: any, uri: string, type: string) {
+
+function incrementTerm(term: string) {
+    termFrequencies.set(term, (termFrequencies.get(term) || 0) + 1);
+}
+
+function processAutocompleteTerms(parser: any) {
+    for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
+        for (const term of body.value.split(/\s+/)) {
+            const normalizedTerm = term
+                .trim()
+                .toLowerCase()
+                .replace(/[^a-z0-9\u00C0-\u024F]/g, ""); // Allow Unicode Latin characters
+            if (normalizedTerm.length > 3) {
+                incrementTerm(normalizedTerm);
+            }
+        }
+    }
+}
+
+function* processAnnotationsWorker(parser: any, uri: string, type: string) {
     for (const annotation of parser.iterateAnnotationPageAnnotation()) {
-        const modifiedTarget = modifyAnnotationTarget(annotation, uri, type).target;
-        yield {...annotation, target: modifiedTarget};
+        const annotation_parser = new Maniiifest(annotation, "Annotation");
+        const modifiedTarget = modifyAnnotationTarget(annotation_parser, uri, type).target;
+        yield { ...annotation, target: modifiedTarget };
     }
 }
 
 async function processAnnotations(indexId: string, uri: string, type: string, parser: any, commit: boolean) {
     let currentParser = parser;
     while (currentParser) {
-        const annotations = Array.from(processAnnotationsTarget(currentParser, uri, type));
-        if (annotations.length > 0) {
-            const payload = createJsonl(annotations);
-            const url = commit ? `${indexId}/ingest?commit=force` : `${indexId}/ingest`;
-            const response = await quickwitClient.post(url, payload);
-            if (!response.data) {
-                throw new AnnoSearchValidationError('No response data received from Quickwit');
-            }
-            // Check if the response is successful and has data
-            if (response.status === 200 && response.data) {
-                // Print a line of '+' symbols based on the batch length
-                console.log('|' + '+'.repeat(annotations.length) + '|');
-            } else {
-                throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
-            }
-        }
-
+        processAutocompleteTerms(currentParser);
+        const annotations = Array.from(processAnnotationsWorker(currentParser, uri, type));
+        await ingestData(indexId + '_annotations', annotations, commit);
         // Move to the next annotation page if available
         const nextPageUrl = currentParser.getAnnotationPage().next;
         if (nextPageUrl) {
@@ -136,13 +175,20 @@ async function processAnnotationCollection(indexId: string, annotationCollection
     }
 }
 
+async function ingestAutocompleteTerms(indexId: string, commit: boolean) {
+    const chunks = chunkMapToJson(termFrequencies, 1000);
+    for (const chunk of chunks) {
+        await ingestData(indexId + '_autocomplete', chunk, commit);
+    }
+}
+
 export async function loadIndex(indexId: string, uri: string, type: string, commit: boolean) {
     if (!indexId.trim() || !uri.trim()) {
         throw new AnnoSearchValidationError('Invalid index or uri parameter');
     }
 
     // we won't allow loading data into an index that already contains data
-    const indexContents = await quickwitClient.get(`/indexes/${indexId}/describe`);
+    const indexContents = await quickwitClient.get(`/indexes/${indexId + '_annotations'}/describe`);
     if (indexContents.data.num_published_docs > 0) {
         throw new AnnoSearchValidationError(`Index ${indexId} already contains data`);
     }
@@ -161,4 +207,8 @@ export async function loadIndex(indexId: string, uri: string, type: string, comm
         default:
             throw new AnnoSearchValidationError('unsupported type');
     }
+
+    await ingestAutocompleteTerms(indexId, commit);
+    console.log('Data loaded successfully');
+    
 }

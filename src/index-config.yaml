@@ -9,7 +9,3 @@ doc_mapping:
     record: position
     expand_dots: true
     fast: true
-
-
-
-

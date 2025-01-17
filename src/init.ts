@@ -3,7 +3,6 @@ import path from 'path';
 import yaml from 'yaml';
 import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
-import { printJson } from './utils';
 
 const contentType = 'application/yaml';
 const quickwitClient = createClient(contentType);
@@ -21,8 +20,7 @@ function modifyConfig(config: any, indexId: string) {
 }
 
 
-// Initialization function
-export async function initIndex(indexId: string) {
+async function initIndexWorker(indexId: string) {
     if (!indexId.trim()) {
         throw new AnnoSearchValidationError('Invalid index parameter');
     }
@@ -31,9 +29,15 @@ export async function initIndex(indexId: string) {
     const modifiedYamlData = modifyConfig(config, indexId);
     const response = await quickwitClient.post('indexes', modifiedYamlData);
     if (response.status === 200 && response.data) {
-        console.log('Index created successfully');
+        //console.log(`Index ${indexId} created successfully`);
     } else {
         throw new AnnoSearchValidationError('Failed to create index');
     }
 
+}
+
+export async function initIndex(indexId: string) {
+    await initIndexWorker(indexId + '_annotations');
+    await initIndexWorker(indexId + '_autocomplete');
+    console.log(`Index ${indexId} created successfully`);
 }

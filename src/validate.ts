@@ -10,11 +10,45 @@ export const motivations = [
     'tagging'
 ];
 
-export function validateQueryParameter(query: string): void {
-    if (!query.trim()) {
-        throw new AnnoSearchValidationError('Missing query parameter');
+export function validateSearchQueryParameter(query: string): void {
+    const trimmedQuery = query.trim();
+
+    if (!trimmedQuery) {
+        throw new AnnoSearchValidationError('Missing query parameter.');
+    }
+
+    const minKeywordLength = 3;
+    const whitelistedShortKeywords = new Set(["uk", "ai", "us"]);
+    const invalidCharPattern = /[^\p{L}\p{N}\-]/u; // Allow letters, numbers, and hyphens
+
+    const keywords = trimmedQuery.split(/\s+/);
+    for (const keyword of keywords) {
+        if (keyword.length < minKeywordLength && !whitelistedShortKeywords.has(keyword.toLowerCase())) {
+            throw new AnnoSearchValidationError(`Keyword "${keyword}" must be at least ${minKeywordLength} characters long.`);
+        }
+        if (invalidCharPattern.test(keyword)) {
+            throw new AnnoSearchValidationError(`Keyword "${keyword}" contains invalid characters.`);
+        }
     }
 }
+
+export function validateAutocompleteQueryParameter(query: string): void {
+    const trimmedQuery = query.trim();
+    const minQueryLength = 3;
+    const invalidCharPattern = /[^\p{L}\p{N}\-]/u; // Allow Latin letters, numbers, and hyphens
+
+    if (!trimmedQuery) {
+        throw new AnnoSearchValidationError('Missing autocomplete query parameter.');
+    }
+    if (trimmedQuery.length < minQueryLength) {
+        throw new AnnoSearchValidationError(`Autocomplete query must be at least ${minQueryLength} characters long.`);
+    }
+    if (invalidCharPattern.test(trimmedQuery)) {
+        throw new AnnoSearchValidationError('Autocomplete query contains invalid characters. Only Latin letters, numbers, and hyphens are allowed.');
+    }
+}
+
+
 
 export function validateOffset(offset: number): void {
     if (offset < 0) {
