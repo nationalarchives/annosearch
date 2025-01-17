@@ -118,7 +118,7 @@ describe('CLI: serve command', () => {
             },
         });
     });
-    
+
 
     it('API: should validate the total count in partOf', async () => {
         const response = await axios.get('http://localhost:3000/test-index/search?q=annotation');
@@ -224,6 +224,56 @@ describe('CLI: serve command', () => {
         await expect(axios.get('http://localhost:3000/missing-index/search?q=annotation')).rejects.toMatchObject({
             response: { status: 404 },
         });
+    });
+
+    it('API: should return keyword matches for autocomplete', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');
+        // Validate that all returned items contain the keyword
+        response.data.items.forEach((item: { value: string; }) => {
+            expect(item.value).toContain('anno');
+        });
+    });
+
+    it('API: should return a 400 status for missing keyword', async () => {
+        await expect(axios.get('http://localhost:3000/test-index/autocomplete')).rejects.toMatchObject({
+            response: { status: 400 },
+        });
+    });
+
+    it('API: should return a 404 status for missing index', async () => {
+        await expect(axios.get('http://localhost:3000/missing-index/autocomplete?q=anno')).rejects.toMatchObject({
+            response: { status: 404 },
+        });
+    });
+
+    it('API: should return a 404 status for invalid path', async () => {
+        await expect(axios.get('http://localhost:3000/invalid-path/autocomplete?q=anno')).rejects.toMatchObject({
+            response: { status: 404 },
+        });
+    });
+
+    it('API: should return ignored parameters in the response', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&date=2023-12-01&user=12345');    
+        expect(response.data).toHaveProperty('ignored');
+        expect(response.data.ignored).toEqual(expect.arrayContaining(['date', 'user']));
+    });
+
+    it('API: should not include ignored property when no ignored parameters are present', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');    
+        expect(response.data).not.toHaveProperty('ignored');
+    });
+    
+    it('API: should not include the ignored property when no ignored parameters are present', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&irrelevant=value');    
+        expect(response.data).not.toHaveProperty('ignored');
+    });
+    
+    it('API: should return valid items even with ignored parameters present', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&date=2023-12-01');
+        response.data.items.forEach((item: { value: string }) => {
+            expect(item.value).toContain('anno');
+        });    
+        expect(response.data.ignored).toEqual(expect.arrayContaining(['date']));
     });
 
 });
