@@ -36,6 +36,7 @@ export function makeSearchResponse(indexId: string, data: any, searchUrl: string
     };
 }
 
+
 export function makeAutocompleteResponse(indexId: string, data: any, searchUrl: string, query: string, ignoredParams: string[]): any {
     const response: any = {
         "@context": "http://iiif.io/api/search/2/context.json",
@@ -43,11 +44,16 @@ export function makeAutocompleteResponse(indexId: string, data: any, searchUrl: 
         type: "TermPage",
         ...(ignoredParams.length > 0 && { ignored: ignoredParams }), // Add ignored if it exists
         items: data.hits.map((hit: any) => ({
-            value: hit.term
+            value: hit.term,
+            total: hit.frequency,
+            service: [
+                {
+                    id: `${searchUrl}/${indexId}/search?q=${encodeURIComponent(hit.term)}`,
+                    type: "SearchService2"
+                }
+            ]
         })),
     };
 
     return response;
 }
-
-

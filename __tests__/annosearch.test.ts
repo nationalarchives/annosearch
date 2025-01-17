@@ -276,6 +276,15 @@ describe('CLI: serve command', () => {
         expect(response.data.ignored).toEqual(expect.arrayContaining(['date']));
     });
 
+    it('API: should validate the total property for each autocomplete item', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');        
+        response.data.items.forEach((item: { total: number }) => {
+            expect(item).toHaveProperty('total'); 
+            expect(typeof item.total).toBe('number'); 
+            expect(item.total).toBeGreaterThanOrEqual(0); 
+        });
+    });
+    
 });
 
 describe('CLI: invalid command', () => {
