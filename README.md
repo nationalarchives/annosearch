@@ -10,13 +10,13 @@ AnnoSearch uses [Quickwit](https://quickwit.io) as its backend database to effic
 We first need to create an index.
 ```
 ❯ annosearch init --index cookbook
-Index created successfully
+Index cookbook created successfully
 ```
 We can now load the index with the annotations referenced in a IIIF manifest.
 ```
 ❯ annosearch load --index cookbook --type Manifest --uri https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json
 Loading Manifest from https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/manifest.json into index cookbook
-|+|
+Data loaded successfully
 ```
 After Quickwit finishes ingesting and indexing the data we can perform a search.
 ```
@@ -140,7 +140,6 @@ Adjust these values as needed to customize AnnoSearch’s configuration and beha
 
 ## Todo
 
-- Implement the autocomplete service
 - Implement extended API responses
 
 
