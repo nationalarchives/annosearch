@@ -83,7 +83,7 @@ export async function searchAutocomplete(indexId: string, q: string, maxHits: nu
         max_hits: maxHits,
     });
     if (response.status === 200 && response.data) {
-        return makeAutocompleteResponse(response.data, searchUrl, q, ignoredParams);
+        return makeAutocompleteResponse(indexId, response.data, searchUrl, q, ignoredParams);
     } else {
         throw new AnnoSearchValidationError('Failed to search autocomplete index');
     }
