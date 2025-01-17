@@ -29,7 +29,7 @@ async function initIndexWorker(indexId: string) {
     const modifiedYamlData = modifyConfig(config, indexId);
     const response = await quickwitClient.post('indexes', modifiedYamlData);
     if (response.status === 200 && response.data) {
-        console.log(`Index ${indexId} created successfully`);
+        //console.log(`Index ${indexId} created successfully`);
     } else {
         throw new AnnoSearchValidationError('Failed to create index');
     }
@@ -39,4 +39,5 @@ async function initIndexWorker(indexId: string) {
 export async function initIndex(indexId: string) {
     await initIndexWorker(indexId + '_annotations');
     await initIndexWorker(indexId + '_autocomplete');
+    console.log(`Index ${indexId} created successfully`);
 }

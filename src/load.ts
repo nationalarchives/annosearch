@@ -33,8 +33,8 @@ async function ingestData<T>(indexId: string, annotations: T[], commit: boolean)
         // Check if the response is successful and has data
         if (response.status === 200 && response.data) {
             // Print a line of '+' symbols based on the batch length
-            console.log('writing to index ' + indexId);
-            console.log('|' + '+'.repeat(annotations.length) + '|');
+            //console.log('writing to index ' + indexId);
+            //console.log('|' + '+'.repeat(annotations.length) + '|');
         } else {
             throw new AnnoSearchValidationError('Failed to ingest data: Invalid response from Quickwit');
         }
