@@ -6,6 +6,5 @@ doc_mapping:
     indexed: true
     stored: true
     tokenizer: default
-    record: position
-    expand_dots: true
+    record: basic
     fast: true
