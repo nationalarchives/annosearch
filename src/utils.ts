@@ -102,9 +102,14 @@ export function createJsonl(data: unknown | unknown[]): string {
     }
 }
 
+/**
+ * Normalize a term by trimming whitespace, converting to lowercase,
+ * and removing non-alphanumeric characters from the start and end.
+ */
 export function normalizeTerm(term: string): string {
     return term
         .trim()
         .toLowerCase()
-        .replace(/[^\p{L}\p{N}'\-.]/gu, ""); // Retain letters, numbers, apostrophes, hyphens, periods
+        .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""); 
 }
+
