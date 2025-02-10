@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import { Maniiifest } from 'maniiifest';
 import * as path from 'path';
+import { normalizeTerm } from './utils';
 
 async function readJsonFromFile(filePath: string): Promise<any> {
     try {
@@ -15,7 +16,7 @@ async function readJsonFromFile(filePath: string): Promise<any> {
 
 let matchCounter = 1;
 
-function createItem(id: string, value: string, prefix: string, suffix: string) {
+function createItem(id: string, term: string, prefix: string, suffix: string) {
     return {
         "id": `${id}/match-${matchCounter++}`,
         "type": "Annotation",
@@ -27,7 +28,7 @@ function createItem(id: string, value: string, prefix: string, suffix: string) {
                 {
                     "type": "TextQuoteSelector",
                     "prefix": prefix,
-                    "exact": value,
+                    "exact": term,
                     "suffix": suffix
                 }
             ]
@@ -35,7 +36,9 @@ function createItem(id: string, value: string, prefix: string, suffix: string) {
     };
 }
 
+
 function createAnnotations(annotation_page: any, query: string): any {
+    const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
     const annotationPageParser = new Maniiifest(annotation_page, "AnnotationPage");
     const annotations = annotationPageParser.iterateAnnotationPageAnnotation();
     let annotationItems = [];
@@ -46,24 +49,29 @@ function createAnnotations(annotation_page: any, query: string): any {
         for (const body of bodyParser) {
             const bodyValue = body.value;
             if (bodyValue) {
-                const match = new RegExp(`(\\b${query}\\b)`, "i").exec(bodyValue);
-                if (match) {
-                    const prefix = bodyValue.substring(Math.max(0, match.index - 10), match.index);
-                    const suffix = bodyValue.substring(match.index + query.length, Math.min(bodyValue.length, match.index + query.length + 10));
-                    const item = createItem(annotation.id, query, prefix, suffix);
-                    annotationItems.push(item);
+                for (const term of terms) { // Process each term separately
+                    const regex = new RegExp(`(\\b${term}\\b)`, "gi"); // Global + Case-Insensitive
+                    let match;
+
+                    while ((match = regex.exec(bodyValue)) !== null) { // Iterate all matches for the term
+                        const prefix = bodyValue.substring(Math.max(0, match.index - 10), match.index);
+                        const suffix = bodyValue.substring(match.index + term.length, Math.min(bodyValue.length, match.index + term.length + 10));
+                        const item = createItem(annotation.id, term, prefix, suffix);
+                        annotationItems.push(item);
+                    }
                 }
             }
         }
     }
-    
     annotation_page.annotations = [];
     annotation_page.annotations.push({
         "items": annotationItems
     });
-    
+
     return annotation_page;
 }
+
+
 
 // Example usage with ts-node highlight.ts
 (async () => {
