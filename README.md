@@ -137,11 +137,6 @@ Configure AnnoSearch by setting the following environment variables:
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
 
-## Todo
-
-- Implement extended API responses
-
-
 ## License
 
 This project is licensed under the MIT License.
