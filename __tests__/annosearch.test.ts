@@ -253,38 +253,98 @@ describe('CLI: serve command', () => {
     });
 
     it('API: should return ignored parameters in the response', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&date=2023-12-01&user=12345');    
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&date=2023-12-01&user=12345');
         expect(response.data).toHaveProperty('ignored');
         expect(response.data.ignored).toEqual(expect.arrayContaining(['date', 'user']));
     });
 
     it('API: should not include ignored property when no ignored parameters are present', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');    
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');
         expect(response.data).not.toHaveProperty('ignored');
     });
-    
+
     it('API: should not include the ignored property when no ignored parameters are present', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&irrelevant=value');    
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&irrelevant=value');
         expect(response.data).not.toHaveProperty('ignored');
     });
-    
+
     it('API: should return valid items even with ignored parameters present', async () => {
         const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno&date=2023-12-01');
         response.data.items.forEach((item: { value: string }) => {
             expect(item.value).toContain('anno');
-        });    
+        });
         expect(response.data.ignored).toEqual(expect.arrayContaining(['date']));
     });
 
     it('API: should validate the total property for each autocomplete item', async () => {
-        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');        
+        const response = await axios.get('http://localhost:3000/test-index/autocomplete?q=anno');
         response.data.items.forEach((item: { total: number }) => {
-            expect(item).toHaveProperty('total'); 
-            expect(typeof item.total).toBe('number'); 
-            expect(item.total).toBeGreaterThanOrEqual(0); 
+            expect(item).toHaveProperty('total');
+            expect(typeof item.total).toBe('number');
+            expect(item.total).toBeGreaterThanOrEqual(0);
         });
     });
-    
+
+    it('API: should return highlighting results for a single term', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=text');
+
+        expect(response.data.annotations.length).toBeGreaterThan(0);
+
+        const firstAnnotationPage = response.data.annotations[0];
+        expect(firstAnnotationPage).toMatchObject({
+            type: 'AnnotationPage',
+            items: expect.any(Array),
+        });
+
+        const firstItem = firstAnnotationPage.items[0];
+        expect(firstItem).toMatchObject({
+            id: expect.stringContaining('http'),
+            type: 'Annotation',
+            motivation: 'highlighting',
+            target: {
+                type: 'SpecificResource',
+                source: expect.stringContaining('http'),
+                selector: [
+                    {
+                        type: 'TextQuoteSelector',
+                        prefix: expect.any(String),
+                        exact: 'text',
+                        suffix: expect.any(String),
+                    },
+                ],
+            },
+        });
+    });
+
+    it('API: should return results for multiple query terms', async () => {
+        const response = await axios.get('http://localhost:3000/test-index/search?q=annotation text');
+
+        expect(response.data.annotations.length).toBeGreaterThan(0);
+
+        const annotationItems = response.data.annotations[0].items;
+        expect(annotationItems.length).toBeGreaterThan(1); // Should return multiple items
+
+        for (const item of annotationItems) {
+            expect(item).toMatchObject({
+                id: expect.stringContaining('http'),
+                type: 'Annotation',
+                motivation: 'highlighting',
+                target: {
+                    type: 'SpecificResource',
+                    source: expect.stringContaining('http'),
+                    selector: expect.arrayContaining([
+                        {
+                            type: 'TextQuoteSelector',
+                            prefix: expect.any(String),
+                            exact: expect.stringMatching(/Annotation|text/), 
+                            suffix: expect.any(String),
+                        },
+                    ]),
+                },
+            });
+        }
+    });
+
 });
 
 describe('CLI: invalid command', () => {

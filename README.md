@@ -44,6 +44,30 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
       },
       "type": "Annotation"
     }
+  ],
+  "annotations": [
+    {
+      "type": "AnnotationPage",
+      "items": [
+        {
+          "id": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1/annopage-2/anno-1/match-1",
+          "type": "Annotation",
+          "motivation": "highlighting",
+          "target": {
+            "type": "SpecificResource",
+            "source": "https://iiif.io/api/cookbook/recipe/0266-full-canvas-annotation/canvas-1/annopage-2/anno-1",
+            "selector": [
+              {
+                "type": "TextQuoteSelector",
+                "prefix": "...rktplatz mit Gänseliesel ",
+                "exact": "Brunnen",
+                "suffix": ""
+              }
+            ]
+          }
+        }
+      ]
+    }
   ]
 }
 ```
@@ -136,11 +160,6 @@ Configure AnnoSearch by setting the following environment variables:
   - **Default**: `http://localhost:3000`
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
-
-## Todo
-
-- Implement extended API responses
-
 
 ## License
 

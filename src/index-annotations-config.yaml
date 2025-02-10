@@ -1,0 +1,11 @@
+version: "0.8"
+
+doc_mapping:
+  mode: dynamic
+  dynamic_mapping:
+    indexed: true
+    stored: true
+    tokenizer: default
+    record: position
+    expand_dots: true
+    fast: true
