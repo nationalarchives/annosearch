@@ -27,7 +27,7 @@ async function initIndexWorker(indexId: string, type: string) {
     const filePath = path.resolve(__dirname, `index-${type}-config.yaml`);
     const config = readYamlConfig(filePath);
     const modifiedYamlData = modifyConfig(config, indexId + '_' + type);
-    console.log(modifiedYamlData);
+    //console.log(modifiedYamlData);
     const response = await quickwitClient.post('indexes', modifiedYamlData);
     if (response.status === 200 && response.data) {
         //console.log(`Index ${indexId} created successfully`);
