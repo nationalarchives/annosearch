@@ -50,20 +50,21 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
             const bodyValue = body.value;
             if (bodyValue) {
                 for (const term of terms) { // Process each term separately
-                    const regex = new RegExp(`(\\b${term}\\b)`, "gi"); // Global + Case-Insensitive
+                    const regex = new RegExp(`\\b(${term})\\b`, "gi"); // Global + Case-Insensitive
                     let match;
 
                     while ((match = regex.exec(bodyValue)) !== null) { // Iterate all matches for the term
+                        const exactMatch = match[0]; // Capture the exact match from the original text
                         let prefix = bodyValue.substring(Math.max(0, match.index - snippetLength), match.index);
-                        let suffix = bodyValue.substring(match.index + term.length, Math.min(bodyValue.length, match.index + term.length + snippetLength));
+                        let suffix = bodyValue.substring(match.index + exactMatch.length, Math.min(bodyValue.length, match.index + exactMatch.length + snippetLength));
                         // Add ellipses if the prefix or suffix is truncated
                         if (match.index - snippetLength > 0) {
                             prefix = '...' + prefix;
                         }
-                        if (match.index + term.length + snippetLength < bodyValue.length) {
+                        if (match.index + exactMatch.length + snippetLength < bodyValue.length) {
                             suffix = suffix + '...';
                         }
-                        const item = createItem(annotation.id, term, prefix, suffix);
+                        const item = createItem(annotation.id, exactMatch, prefix, suffix);
                         annotationItems.push(item);
                     }
                 }
