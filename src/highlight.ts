@@ -14,11 +14,9 @@ async function readJsonFromFile(filePath: string): Promise<any> {
     }
 }
 
-let matchCounter = 1;
-
-function createItem(id: string, term: string, prefix: string, suffix: string) {
+function createItem(id: string, term: string, prefix: string, suffix: string, counter: number) {
     return {
-        "id": `${id}/match-${matchCounter++}`,
+        "id": `${id}/match-${counter}`,
         "type": "Annotation",
         "motivation": "highlighting",
         "target": {
@@ -41,8 +39,8 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
     const annotationPageParser = new Maniiifest(annotation_page, "AnnotationPage");
     const annotations = annotationPageParser.iterateAnnotationPageAnnotation();
+    let matchCounter = 1;
     let annotationItems = [];
-
     for (const annotation of annotations) {
         const annotationParser = new Maniiifest(annotation, "Annotation");
         const bodyParser = annotationParser.iterateAnnotationTextualBody();
@@ -64,7 +62,7 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
                         if (match.index + exactMatch.length + snippetLength < bodyValue.length) {
                             suffix = suffix + '...';
                         }
-                        const item = createItem(annotation.id, exactMatch, prefix, suffix);
+                        const item = createItem(annotation.id, exactMatch, prefix, suffix, matchCounter++);
                         annotationItems.push(item);
                     }
                 }
