@@ -333,10 +333,12 @@ describe('CLI: serve command', () => {
                     type: 'SpecificResource',
                     source: expect.stringContaining('http'),
                     selector: expect.arrayContaining([
-                        expect.objectContaining({
+                        {
                             type: 'TextQuoteSelector',
-                            exact: expect.stringMatching(/annotation|text/),
-                        }),
+                            prefix: expect.any(String),
+                            exact: expect.stringMatching(/Annotation|text/), 
+                            suffix: expect.any(String),
+                        },
                     ]),
                 },
             });
