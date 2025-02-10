@@ -37,7 +37,7 @@ function createItem(id: string, term: string, prefix: string, suffix: string) {
 }
 
 
-function createAnnotations(annotation_page: any, query: string): any {
+export function highlightTerms(annotation_page: any, query: string, snippetLength = 25): any {
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
     const annotationPageParser = new Maniiifest(annotation_page, "AnnotationPage");
     const annotations = annotationPageParser.iterateAnnotationPageAnnotation();
@@ -54,8 +54,8 @@ function createAnnotations(annotation_page: any, query: string): any {
                     let match;
 
                     while ((match = regex.exec(bodyValue)) !== null) { // Iterate all matches for the term
-                        const prefix = bodyValue.substring(Math.max(0, match.index - 10), match.index);
-                        const suffix = bodyValue.substring(match.index + term.length, Math.min(bodyValue.length, match.index + term.length + 10));
+                        const prefix = bodyValue.substring(Math.max(0, match.index - snippetLength), match.index);
+                        const suffix = bodyValue.substring(match.index + term.length, Math.min(bodyValue.length, match.index + term.length + snippetLength));
                         const item = createItem(annotation.id, term, prefix, suffix);
                         annotationItems.push(item);
                     }
@@ -65,6 +65,7 @@ function createAnnotations(annotation_page: any, query: string): any {
     }
     annotation_page.annotations = [];
     annotation_page.annotations.push({
+        "type": "AnnotationPage",
         "items": annotationItems
     });
 
@@ -74,13 +75,13 @@ function createAnnotations(annotation_page: any, query: string): any {
 
 
 // Example usage with ts-node highlight.ts
-(async () => {
-    const filePath = '../../maniiifest/test/samples/search.json';
-    try {
-        const jsonData = await readJsonFromFile(filePath);
-        const res = createAnnotations(jsonData, 'london');
-        console.log(JSON.stringify(res, null, 2));
-    } catch (error) {
-        console.error('Failed to read JSON:', error);
-    }
-})();
+// (async () => {
+//     const filePath = '../../maniiifest/test/samples/search.json';
+//     try {
+//         const jsonData = await readJsonFromFile(filePath);
+//         const res = highlightTerms(jsonData, 'london society');
+//         console.log(JSON.stringify(res, null, 2));
+//     } catch (error) {
+//         console.error('Failed to read JSON:', error);
+//     }
+// })();

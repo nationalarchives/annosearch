@@ -2,6 +2,8 @@ import { createClient } from './quickwit';
 import { AnnoSearchValidationError } from './errors';
 import { makeSearchResponse, makeAutocompleteResponse } from './iiif';
 import { validateSearchQueryParameter, validateAutocompleteQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation, validateUser } from './validate';
+import { highlightTerms } from './highlight';
+import { sign } from 'crypto';
 
 const contentType = 'application/json';
 const quickwitClient = createClient(contentType);
@@ -63,7 +65,8 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     });
 
     if (response.status === 200 && response.data) {
-        return makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
+        const result = makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
+        return highlightTerms(result, q);
     } else {
         throw new AnnoSearchValidationError('Failed to search index');
     }
