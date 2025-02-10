@@ -60,7 +60,7 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
               {
                 "type": "TextQuoteSelector",
                 "prefix": "...rktplatz mit Gänseliesel ",
-                "exact": "brunnen",
+                "exact": "Brunnen",
                 "suffix": ""
               }
             ]
