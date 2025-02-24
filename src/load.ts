@@ -141,23 +141,36 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
     }
 }
 
-async function processCollection(indexId: string, collectionUrl: string, commit: boolean) {
-    const jsonData = await fetchJson(collectionUrl);
+async function processCollection(indexId: string, uri: string, commit: boolean) {
+    const jsonData = await fetchJson(uri); 
     const parser = new Maniiifest(jsonData);
-    const type = parser.getSpecificationType();
-    if (type !== 'Collection') {
-        throw new AnnoSearchParseError('Specification should be a Collection');
+    if (parser.getSpecificationType() !== "Collection") {
+        throw new AnnoSearchParseError("Expected a Collection");
     }
-    const manifests = parser.iterateCollectionManifest();
-    for (const item of manifests) {
-        const manifestRef = new Maniiifest(item);
-        const manifestId = manifestRef.getManifestId();
-        if (manifestId) {
-            await processManifest(indexId, manifestId, commit);
-        } else {
-            throw new AnnoSearchValidationError('Manifest ID is null');
+    async function process(parsedJson: any, processedCollections: Set<string>) {
+        if (processedCollections.has(parsedJson.id)) return; 
+        processedCollections.add(parsedJson.id); 
+        const parser = new Maniiifest(parsedJson);
+        let foundManifests = false;
+        for (const manifestItem of parser.iterateCollectionManifest()) {
+            console.log(`Processing manifest ${manifestItem.id}`);
+            await processManifest(indexId, manifestItem.id, commit);
+            foundManifests = true;
+        }
+        if (!foundManifests) {
+            for (const collectionItem of parser.iterateCollectionCollection()) {
+                if (collectionItem.items) {
+                    // Inline collection (no extra fetch needed)
+                    await process(collectionItem, processedCollections);
+                } else {
+                    // Referenced collection (fetch JSON & process)
+                    const nestedJson = await fetchJson(collectionItem.id);
+                    await process(nestedJson, processedCollections);
+                }
+            }
         }
     }
+    await process(jsonData, new Set());
 }
 
 async function processAnnotationCollection(indexId: string, annotationCollectionUrl: string, commit: boolean) {
