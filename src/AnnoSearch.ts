@@ -8,6 +8,7 @@ interface Config {
     maxHits: number;
     port: number;
     host: string;
+    corsOrigin: string;
     searchUrl: string;
 }
 
@@ -16,6 +17,7 @@ function loadConfig(): Config {
         maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '20'),
         port: parseInt(process.env.ANNOSEARCH_PORT || '3000'),
         host: process.env.ANNOSEARCH_HOST || 'localhost',
+        corsOrigin: process.env.ANNOSEARCH_CORS_ORIGIN || '*',
         searchUrl: process.env.ANNOSEARCH_PUBLIC_URL || 'http://localhost:3000',
     };
 }
@@ -24,12 +26,14 @@ class AnnoSearch {
     private maxHits: number;
     private port: number;
     private host: string;
+    private corsOrigin: string;
     private searchUrl: string;
 
-    constructor({ maxHits, port, host, searchUrl }: Config = loadConfig()) {
+    constructor({ maxHits, port, host, corsOrigin, searchUrl }: Config = loadConfig()) {
         this.maxHits = maxHits;
         this.port = port;
         this.host = host;
+        this.corsOrigin = corsOrigin;
         this.searchUrl = searchUrl;
     }
 
@@ -49,6 +53,14 @@ class AnnoSearch {
         this.port = port;
     }
 
+    getCorsOrigin(): string {
+        return this.corsOrigin;
+    }
+
+    setCorsOrigin(corsOrigin: string) {
+        this.corsOrigin = corsOrigin;
+    }
+    
     getMaxHits(): number {
         return this.maxHits;
     }

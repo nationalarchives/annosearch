@@ -1,5 +1,5 @@
 // FILE: server.ts
-
+import cors from 'cors';
 import express from 'express';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
@@ -25,8 +25,16 @@ export async function serve(client: AnnoSearch) {
     const app = express();
     const port = client.getPort();
     const host = client.getHost()
+    const corsOrigin = client.getCorsOrigin();
 
     app.use(pinoHttp({ logger }));
+
+    app.use(cors({
+        origin: corsOrigin, // Allow only specified origin
+        methods: ['GET', 'POST', 'OPTIONS'], // Allowed methods
+        allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+        credentials: true // Allow cookies (if needed)
+    }));
 
     app.get('/:index/search', async (req, res) => {
         try {
