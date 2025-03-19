@@ -128,11 +128,12 @@ annosearch search --index <index-id> --query <search-query> [--page <page-number
 Start a web server that provides a search service using the [IIIF Content Search 2.0 API](https://iiif.io/api/search/2.0/).
 
 ```bash
-annosearch serve --port <port> --host <host>
+annosearch serve --port <port> --host <host> --cors <cors-origin>
 ```
 
 - `port`: The port on which to run the server.
 - `host`: The host on which to run the server.
+- `cors`: The cors origin.
 
 #### `version`
 
@@ -158,6 +159,9 @@ Configure AnnoSearch by setting the following environment variables:
 
 - **`ANNOSEARCH_PUBLIC_URL`**: URL for public-facing server requests.
   - **Default**: `http://localhost:3000`
+
+- **`ANNOSEARCH_CORS_ORIGIN`**: Cors origin.
+  - **Default**: `*`
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
 

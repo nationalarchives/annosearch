@@ -140,12 +140,18 @@ async function serveOptions(yargs: any) {
             type: 'string',
             description: 'Host to run the server on',
             default: client.getHost(),
+        })
+        .option('cors', {
+            type: 'string',
+            description: 'CORS origin',
+            default: client.getCorsOrigin(),
         });
 }
 
 async function serveCommand(argv: any) {
     client.setPort(argv.port);
     client.setHost(argv.host);
+    client.setCorsOrigin(argv.cors);
     serve(client);
 }
 
