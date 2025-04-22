@@ -14,8 +14,15 @@ async function readJsonFromFile(filePath: string): Promise<any> {
     }
 }
 
-function createItem(id: string, term: string, prefix: string, suffix: string, counter: number) {
-    return {
+function createItem(
+    id: string,
+    term: string,
+    prefix: string,
+    suffix: string,
+    counter: number,
+    language?: string | string[]
+) {
+    const item: any = {
         "id": `${id}/match-${counter}`,
         "type": "Annotation",
         "motivation": "highlighting",
@@ -32,8 +39,11 @@ function createItem(id: string, term: string, prefix: string, suffix: string, co
             ]
         }
     };
+    if (language) {
+        item.language = language;
+    }
+    return item;
 }
-
 
 export function highlightTerms(annotation_page: any, query: string, snippetLength = 25): any {
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
@@ -46,6 +56,10 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
         const bodyParser = annotationParser.iterateAnnotationTextualBody();
         for (const body of bodyParser) {
             const bodyValue = body.value;
+            const lang = body.language as string | string[] | undefined;
+            const bodyLanguage = Array.isArray(lang)
+                ? (lang.length > 0 ? lang : undefined)
+                : lang;
             if (bodyValue) {
                 for (const term of terms) { // Process each term separately
                     const regex = new RegExp(`\\b(${term})\\b`, "gi"); // Global + Case-Insensitive
@@ -62,7 +76,7 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
                         if (match.index + exactMatch.length + snippetLength < bodyValue.length) {
                             suffix = suffix + '...';
                         }
-                        const item = createItem(annotation.id, exactMatch, prefix, suffix, matchCounter++);
+                        const item = createItem(annotation.id, exactMatch, prefix, suffix, matchCounter++, bodyLanguage);
                         annotationItems.push(item);
                     }
                 }
