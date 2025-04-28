@@ -45,6 +45,7 @@ export function makeAutocompleteResponse(indexId: string, data: any, searchUrl: 
         ...(ignoredParams.length > 0 && { ignored: ignoredParams }), // Add ignored if it exists
         items: data.hits.map((hit: any) => ({
             value: hit.term,
+            language: hit.language,
             total: hit.frequency,
             service: [
                 {
