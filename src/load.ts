@@ -6,15 +6,21 @@ import { createClient } from './quickwit';
 const contentType = 'application/x-ndjson';
 const quickwitClient = createClient(contentType);
 
+const TERM_SEPARATOR = '\u241F'; // should not appear in terms
 const termFrequencies = new Map<string, number>();
 
-function* chunkMapToJson<K, V>(
-    map: Map<K, V>,
+function* chunkMapToJson(
+    map: Map<string, number>,
     chunkSize: number
-): Generator<{ term: K; frequency: V }[]> {
-    let chunk: { term: K; frequency: V }[] = [];
-    for (const [term, frequency] of map.entries()) {
-        chunk.push({ term, frequency });
+): Generator<{ term: string; language?: string; frequency: number }[]> {
+    let chunk: { term: string; language?: string; frequency: number }[] = [];
+    for (const [key, frequency] of map.entries()) {
+        const [term, language] = key.split(TERM_SEPARATOR);
+        chunk.push({
+            term,
+            ...(language ? { language } : {}), // Include 'language' field only if it exists
+            frequency
+        });
         if (chunk.length === chunkSize) {
             yield chunk;
             chunk = [];
@@ -69,16 +75,20 @@ function modifyAnnotationTarget(parser: any, uri: string, type: string) {
 }
 
 
-function incrementTerm(term: string) {
-    termFrequencies.set(term, (termFrequencies.get(term) || 0) + 1);
+function incrementTerm(term: string, language: string) {
+    const key = `${term}${TERM_SEPARATOR}${language}`;
+    termFrequencies.set(key, (termFrequencies.get(key) || 0) + 1);
 }
+
+
 
 function processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
+        const language = body.language || '';
         for (const term of body.value.split(/\s+/)) {
             const normalizedTerm = normalizeTerm(term);
             if (normalizedTerm.length > 3) {
-                incrementTerm(normalizedTerm);
+                incrementTerm(normalizedTerm, language);
             }
         }
     }
@@ -142,14 +152,14 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
 }
 
 async function processCollection(indexId: string, uri: string, commit: boolean) {
-    const jsonData = await fetchJson(uri); 
+    const jsonData = await fetchJson(uri);
     const parser = new Maniiifest(jsonData);
     if (parser.getSpecificationType() !== "Collection") {
         throw new AnnoSearchParseError("Expected a Collection");
     }
     async function process(parsedJson: any, processedCollections: Set<string>) {
-        if (processedCollections.has(parsedJson.id)) return; 
-        processedCollections.add(parsedJson.id); 
+        if (processedCollections.has(parsedJson.id)) return;
+        processedCollections.add(parsedJson.id);
         const parser = new Maniiifest(parsedJson);
         let foundManifests = false;
         for (const manifestItem of parser.iterateCollectionManifest()) {
