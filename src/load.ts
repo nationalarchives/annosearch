@@ -80,11 +80,13 @@ function incrementTerm(term: string, language: string) {
     termFrequencies.set(key, (termFrequencies.get(key) || 0) + 1);
 }
 
-
-
 function processAutocompleteTerms(parser: any) {
     for (const body of parser.iterateAnnotationPageAnnotationTextualBody()) {
-        const language = body.language || '';
+        const lang = body.language as string | string[] | undefined;
+        const language: string = Array.isArray(lang)
+            ? (lang.length > 0 ? lang[0] : '')
+            : (lang || '');
+
         for (const term of body.value.split(/\s+/)) {
             const normalizedTerm = normalizeTerm(term);
             if (normalizedTerm.length > 3) {
@@ -146,6 +148,9 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
         if (page.items) {
             await processAnnotationPage(indexId, manifestUrl, type, page, commit);
         } else {
+            if (!page.id) {
+                throw new AnnoSearchValidationError('Annotation page ID is undefined');
+            }
             await processAnnotationPageRef(indexId, manifestUrl, type, page.id, commit);
         }
     }
