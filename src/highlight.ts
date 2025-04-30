@@ -20,30 +20,32 @@ function createItem(
     prefix: string,
     suffix: string,
     counter: number,
-    language?: string | string[]
+    language?: string
 ) {
+    const target: any = {
+        "type": "SpecificResource",
+        "source": `${id}`,
+        "selector": [
+            {
+                "type": "TextQuoteSelector",
+                "prefix": prefix,
+                "exact": term,
+                "suffix": suffix
+            }
+        ]
+    };
+    if (language) {
+        target.language = language;
+    }
     const item: any = {
         "id": `${id}/match-${counter}`,
         "type": "Annotation",
         "motivation": "highlighting",
-        "target": {
-            "type": "SpecificResource",
-            "source": `${id}`,
-            "selector": [
-                {
-                    "type": "TextQuoteSelector",
-                    "prefix": prefix,
-                    "exact": term,
-                    "suffix": suffix
-                }
-            ]
-        }
+        "target": target
     };
-    if (language) {
-        item.language = language;
-    }
     return item;
 }
+
 
 export function highlightTerms(annotation_page: any, query: string, snippetLength = 25): any {
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
@@ -57,9 +59,9 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
         for (const body of bodyParser) {
             const bodyValue = body.value;
             const lang = body.language as string | string[] | undefined;
-            const bodyLanguage = Array.isArray(lang)
-                ? (lang.length > 0 ? lang : undefined)
-                : lang;
+            const bodyLanguage: string | undefined = Array.isArray(lang)
+                ? (lang.length > 0 ? lang[0] : undefined)
+                : lang;            
             if (bodyValue) {
                 for (const term of terms) { // Process each term separately
                     const regex = new RegExp(`\\b(${term})\\b`, "gi"); // Global + Case-Insensitive
