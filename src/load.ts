@@ -143,18 +143,49 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
     if (type !== 'Manifest') {
         throw new AnnoSearchParseError('Specification should be a Manifest');
     }
+
+    const seenPageIds = new Set<string>();
+    const seenAnnotationIds = new Set<string>();
     const annotationPages = parser.iterateManifestCanvasW3cAnnotationPage();
+
     for (const page of annotationPages) {
+        const pageId = page.id;
+        if (pageId && seenPageIds.has(pageId)) {
+            console.warn(`Skipping duplicate page: ${pageId}`);
+            continue;
+        }
+        if (pageId) seenPageIds.add(pageId);
+
+        // Wrap the default processor with annotation ID filtering
+        const filterAndProcess = async (annotations: any[]) => {
+            const uniqueAnnotations = annotations.filter(anno => {
+                if (seenAnnotationIds.has(anno.id)) {
+                    return false;
+                }
+                seenAnnotationIds.add(anno.id);
+                return true;
+            });
+            await ingestData(indexId + '_annotations', uniqueAnnotations, commit);
+        };
+
         if (page.items) {
-            await processAnnotationPage(indexId, manifestUrl, type, page, commit);
+            const parser = new Maniiifest(page, 'AnnotationPage');
+            processAutocompleteTerms(parser);
+            const annotations = Array.from(processAnnotationsWorker(parser, manifestUrl, type));
+            await filterAndProcess(annotations);
         } else {
-            if (!page.id) {
+            if (!pageId) {
                 throw new AnnoSearchValidationError('Annotation page ID is undefined');
             }
-            await processAnnotationPageRef(indexId, manifestUrl, type, page.id, commit);
+            const jsonData = await fetchJson(pageId);
+            const parser = new Maniiifest(jsonData, 'AnnotationPage');
+            processAutocompleteTerms(parser);
+            const annotations = Array.from(processAnnotationsWorker(parser, manifestUrl, type));
+            await filterAndProcess(annotations);
         }
     }
 }
+
 
 async function processCollection(indexId: string, uri: string, commit: boolean) {
     const jsonData = await fetchJson(uri);
