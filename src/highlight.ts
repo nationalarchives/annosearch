@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { Maniiifest } from 'maniiifest';
 import * as path from 'path';
-import { normalizeTerm } from './utils';
+import { normalizeTerm, escapeRegex } from './utils';
 
 async function readJsonFromFile(filePath: string): Promise<any> {
     try {
@@ -46,7 +46,6 @@ function createItem(
     return item;
 }
 
-
 export function highlightTerms(annotation_page: any, query: string, snippetLength = 25): any {
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
     const annotationPageParser = new Maniiifest(annotation_page, "AnnotationPage");
@@ -64,7 +63,8 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
                 : lang;            
             if (bodyValue) {
                 for (const term of terms) { // Process each term separately
-                    const regex = new RegExp(`\\b(${term})\\b`, "gi"); // Global + Case-Insensitive
+                    const escapedTerm = escapeRegex(term); // Escape special characters in the term
+                    const regex = new RegExp(`\\b(${escapedTerm})\\b`, "gi"); // Global + Case-Insensitive
                     let match;
 
                     while ((match = regex.exec(bodyValue)) !== null) { // Iterate all matches for the term
