@@ -113,3 +113,7 @@ export function normalizeTerm(term: string): string {
         .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""); 
 }
 
+export function escapeRegex(term: string): string {
+    // Escape special characters in the term to make it regex-safe
+    return term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
