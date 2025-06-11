@@ -36,3 +36,6 @@ build/
 
 # Environment variables
 .env
+
+# quickwit data
+qwdata/

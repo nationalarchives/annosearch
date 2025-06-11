@@ -1,0 +1,20 @@
+
+services:
+  quickwit:
+    image: quickwit/quickwit
+    command: run
+    ports:
+      - "127.0.0.1:7280:7280"
+    volumes:
+      - ./qwdata:/quickwit/qwdata
+
+  annosearch:
+    build: .
+    depends_on:
+      - quickwit
+    environment:
+      ANNOSEARCH_PUBLIC_URL: http://localhost:3000
+      QUICKWIT_BASE_URL: http://quickwit:7280/api/v1/
+    ports:
+      - "3000:3000"
+    command: ["serve"]

@@ -74,10 +74,39 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
 
 ## Usage
 
+### Installation
+
 Make sure you have Quickwit installed and [running](https://quickwit.io/docs/get-started/quickstart) and then install AnnoSearch.
 
 ```bash
 npm install -g annosearch
+```
+
+### Deployment
+
+Once you have created your data and are ready to deploy you can use Docker to start the service and serve the qwdata directory containing the Quickwit data.
+
+```bash
+docker compose up
+```
+
+Call the version endpoint to check the service is running.
+```bash
+❯ http :3000/version
+HTTP/1.1 200 OK
+Access-Control-Allow-Credentials: true
+Access-Control-Allow-Origin: *
+Connection: keep-alive
+Content-Length: 19
+Content-Type: application/json; charset=utf-8
+Date: Wed, 11 Jun 2025 13:01:46 GMT
+ETag: W/"13-iZUY2mYGnAauZNa8YzHxtZrPkFE"
+Keep-Alive: timeout=5
+X-Powered-By: Express
+
+{
+    "version": "0.3.6"
+}
 ```
 
 ### Commands
@@ -155,7 +184,7 @@ Configure AnnoSearch by setting the following environment variables:
   - **Default**: `3000`
 
 - **`ANNOSEARCH_HOST`**: Host on which AnnoSearch runs.
-  - **Default**: `localhost`
+  - **Default**: `0.0.0.0`
 
 - **`ANNOSEARCH_PUBLIC_URL`**: URL for public-facing server requests.
   - **Default**: `http://localhost:3000`

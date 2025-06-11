@@ -16,7 +16,7 @@ function loadConfig(): Config {
     return {
         maxHits: parseInt(process.env.ANNOSEARCH_MAX_HITS || '20'),
         port: parseInt(process.env.ANNOSEARCH_PORT || '3000'),
-        host: process.env.ANNOSEARCH_HOST || 'localhost',
+        host: process.env.ANNOSEARCH_HOST || '0.0.0.0',
         corsOrigin: process.env.ANNOSEARCH_CORS_ORIGIN || '*',
         searchUrl: process.env.ANNOSEARCH_PUBLIC_URL || 'http://localhost:3000',
     };
