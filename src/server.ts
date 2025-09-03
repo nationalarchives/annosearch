@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
-import { handleWebError } from './utils';
+import { handleWebError, sanitizeInputs, addSecurityHeaders } from './utils';
 import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError } from './errors';
@@ -27,13 +27,24 @@ export async function serve(client: AnnoSearch) {
     const host = client.getHost()
     const corsOrigin = client.getCorsOrigin();
 
+    // Trust proxy for nginx deployment
+    app.set('trust proxy', true);
+
+    // Request size and timeout limits (nginx should also enforce these)
+    app.use(express.json({ limit: '1kb' })); // Very small since we only accept query params
+    app.use(express.urlencoded({ extended: true, limit: '1kb' }));
+
     app.use(pinoHttp({ logger }));
 
+    // Add security middleware
+    app.use(addSecurityHeaders);
+    app.use(sanitizeInputs);
+
     app.use(cors({
-        origin: corsOrigin, // Allow only specified origin
-        methods: ['GET', 'POST', 'OPTIONS'], // Allowed methods
+        origin: corsOrigin, // Allow only specified origin (configure for nginx domain)
+        methods: ['GET', 'OPTIONS'], // Remove POST since we're read-only
         allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
-        credentials: true // Allow cookies (if needed)
+        credentials: false // Disable cookies for API-only service
     }));
 
     app.get('/:index/search', async (req, res) => {
@@ -66,6 +77,14 @@ export async function serve(client: AnnoSearch) {
     app.get('/version', async (req, res) => {
         try {
             res.json({ version });
+        } catch (error) {
+            handleWebError(error, res);
+        }
+    });
+
+    app.get('/', async (req, res) => {
+        try {
+            res.send('OK');
         } catch (error) {
             handleWebError(error, res);
         }
