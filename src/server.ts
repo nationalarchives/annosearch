@@ -3,7 +3,7 @@ import cors from 'cors';
 import express from 'express';
 import AnnoSearch from './AnnoSearch';
 import { version } from '../package.json'; // Import version from package.json
-import { handleWebError } from './utils';
+import { handleWebError, sanitizeInputs, addSecurityHeaders } from './utils';
 import logger, { logErrorHandler } from './logger'; // Import shared logger
 import pinoHttp from 'pino-http';
 import { AnnoSearchNotFoundError } from './errors';
@@ -28,6 +28,10 @@ export async function serve(client: AnnoSearch) {
     const corsOrigin = client.getCorsOrigin();
 
     app.use(pinoHttp({ logger }));
+
+    // Add security middleware
+    app.use(addSecurityHeaders);
+    app.use(sanitizeInputs);
 
     app.use(cors({
         origin: corsOrigin, // Allow only specified origin
@@ -66,6 +70,14 @@ export async function serve(client: AnnoSearch) {
     app.get('/version', async (req, res) => {
         try {
             res.json({ version });
+        } catch (error) {
+            handleWebError(error, res);
+        }
+    });
+
+    app.get('/', async (req, res) => {
+        try {
+            res.send('OK');
         } catch (error) {
             handleWebError(error, res);
         }

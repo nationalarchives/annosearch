@@ -1,5 +1,5 @@
 import { AnnoSearchValidationError } from "./errors";
-import { normalizeTerm } from "./utils";
+import { normalizeTerm, validateNoSpecialChars, validateQueryComplexity } from "./utils";
 
 export const motivations = [
     'painting',
@@ -16,9 +16,27 @@ export function validateSearchQueryParameter(query: string): void {
     if (!trimmedQuery) {
         throw new AnnoSearchValidationError('Missing query parameter.');
     }
+    
+    // Add length limits
+    if (trimmedQuery.length > 500) {
+        throw new AnnoSearchValidationError('Query too long (max 500 characters)');
+    }
+    
+    // Check for dangerous patterns
+    validateNoSpecialChars(trimmedQuery);
+    
+    // Check query complexity
+    validateQueryComplexity(trimmedQuery);
+    
     const minKeywordLength = 3;
     const whitelistedShortKeywords = new Set(["uk", "ai", "us"]);
     const keywords = trimmedQuery.split(/\s+/);
+    
+    // Limit number of terms
+    if (keywords.length > 20) {
+        throw new AnnoSearchValidationError('Too many search terms (max 20)');
+    }
+    
     for (const keyword of keywords) {
         const normalizedKeyword = normalizeTerm(keyword);
         if (normalizedKeyword.length < minKeywordLength && !whitelistedShortKeywords.has(normalizedKeyword)) {
@@ -33,7 +51,16 @@ export function validateSearchQueryParameter(query: string): void {
 
 export function validateAutocompleteQueryParameter(query: string): void {
     const minQueryLength = 3;
+    const maxQueryLength = 100; // Add max length
     const trimmedQuery = query.trim();
+    
+    if (trimmedQuery.length > maxQueryLength) {
+        throw new AnnoSearchValidationError(`Autocomplete query too long (max ${maxQueryLength} characters)`);
+    }
+    
+    // Check for dangerous patterns
+    validateNoSpecialChars(trimmedQuery);
+    
     const normalizedQuery = normalizeTerm(trimmedQuery);
     if (!normalizedQuery) {
         throw new AnnoSearchValidationError('Missing autocomplete query parameter after normalization.');

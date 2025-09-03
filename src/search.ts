@@ -3,6 +3,7 @@ import { AnnoSearchValidationError } from './errors';
 import { makeSearchResponse, makeAutocompleteResponse } from './iiif';
 import { validateSearchQueryParameter, validateAutocompleteQueryParameter, validateOffset, validateDateRanges, validateMaxHits, validatePageNumber, validateMotivation, validateUser } from './validate';
 import { highlightTerms } from './highlight';
+import { escapeQuickwitQuery } from './utils';
 import { sign } from 'crypto';
 
 const contentType = 'application/json';
@@ -20,25 +21,35 @@ function buildDateQueryFromString(dateRangesString: string): string {
             if (!start || !end) {
                 throw new AnnoSearchValidationError(`Invalid date range format: ${range}`);
             }
-            return `created:[${start} TO ${end}]`;
+            // Escape the date values to prevent injection
+            const escapedStart = escapeQuickwitQuery(start);
+            const escapedEnd = escapeQuickwitQuery(end);
+            return `created:[${escapedStart} TO ${escapedEnd}]`;
         })
         .join(" OR ");
 }
 
 function buildUserQueryFromString(userString: string): string {
-    // Split the string into an array using space as the delimiter
     const users = userString.split(" ");
-
-    // Map each user into a Quickwit-compatible query fragment
     return users
-        .map(user => `(creator:"${user}" OR creator.id:"${user}")`)
+        .map(user => {
+            const sanitizedUser = escapeQuickwitQuery(user.trim());
+            if (!sanitizedUser) return null;
+            return `(creator:"${sanitizedUser}" OR creator.id:"${sanitizedUser}")`;
+        })
+        .filter(Boolean)
         .join(" OR ");
 }
 
 function buildSearchQueryFromString(qString: string): string {
     const terms = qString.split(" ");
     return terms
-        .map(term => `(body.value:"${term}")`)
+        .map(term => {
+            const sanitizedTerm = escapeQuickwitQuery(term.trim());
+            if (!sanitizedTerm) return null;
+            return `(body.value:"${sanitizedTerm}")`;
+        })
+        .filter(Boolean)
         .join(" AND ");
 }
 
@@ -53,7 +64,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateUser(user);
 
     const qQuery = buildSearchQueryFromString(q);
-    const motivationQuery = motivation ? ` AND motivation:"${motivation}"` : '';
+    const motivationQuery = motivation ? ` AND motivation:"${escapeQuickwitQuery(motivation)}"` : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
     const userQuery = user ? ` AND (${buildUserQueryFromString(user)})` : '';
     const fullQuery = `${qQuery}${motivationQuery}${dateQuery}${userQuery}`;
@@ -73,7 +84,8 @@ export async function searchIndex(indexId: string, q: string, motivation: string
 }
 
 function buildAutocompleteQueryFromString(qString: string): string {
-    return `term:${qString}*`
+    const sanitizedQuery = escapeQuickwitQuery(qString.trim());
+    return `term:${sanitizedQuery}*`;
 }
 
 export async function searchAutocomplete(indexId: string, q: string, maxHits: number, searchUrl: string, ignoredParams: string[]) {

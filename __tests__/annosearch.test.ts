@@ -3,6 +3,10 @@ import path from 'path';
 import axios from 'axios';
 import fs from 'fs';
 import nock from 'nock';
+import { escapeQuickwitQuery, validateNoSpecialChars, validateQueryComplexity, normalizeTerm, sanitizeInputs, addSecurityHeaders } from '../src/utils';
+import { validateSearchQueryParameter, validateAutocompleteQueryParameter } from '../src/validate';
+import { AnnoSearchValidationError } from '../src/errors';
+import { Request, Response, NextFunction } from 'express';
 
 const cliPath = path.resolve(__dirname, '../dist/index.js');
 
@@ -70,6 +74,12 @@ describe('CLI: serve command', () => {
         const response = await axios.get('http://localhost:3000/version');
         const version = require('../package.json').version;
         expect(response.data).toEqual({ version });
+    });
+
+    it('API: health check endpoint', async () => {
+        const response = await axios.get('http://localhost:3000/');
+        expect(response.status).toBe(200);
+        expect(response.data).toBe('OK');
     });
 
     it('API: should perform a search with empty result successfully', async () => {
@@ -366,6 +376,166 @@ describe('CLI: delete command', () => {
     it('should fail if index ID is missing', async () => {
         await expect(runCLI('delete')).rejects.toMatchObject({
             stderr: expect.stringContaining('Missing required argument: index'),
+        });
+    });
+});
+
+describe('Utils: security functions', () => {
+    describe('escapeQuickwitQuery', () => {
+        test('should escape special Quickwit characters', () => {
+            expect(escapeQuickwitQuery('test"query')).toBe('test\\"query');
+            expect(escapeQuickwitQuery("test'query")).toBe("test\\'query");
+            expect(escapeQuickwitQuery('test+query')).toBe('test\\+query');
+            expect(escapeQuickwitQuery('test*query')).toBe('test\\*query');
+            expect(escapeQuickwitQuery('test?query')).toBe('test\\?query');
+            expect(escapeQuickwitQuery('test{query}')).toBe('test\\{query\\}');
+            expect(escapeQuickwitQuery('test[query]')).toBe('test\\[query\\]');
+            expect(escapeQuickwitQuery('test(query)')).toBe('test\\(query\\)');
+        });
+    });
+
+    describe('validateNoSpecialChars', () => {
+        test('should reject dangerous characters', () => {
+            expect(() => validateNoSpecialChars('test{}')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test[]')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test()')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test~')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test*')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test?')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test\\')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test+')).toThrow(AnnoSearchValidationError);
+            expect(() => validateNoSpecialChars('test`')).toThrow(AnnoSearchValidationError);
+        });
+
+        test('should allow safe characters', () => {
+            expect(() => validateNoSpecialChars('test query')).not.toThrow();
+            expect(() => validateNoSpecialChars('test-query')).not.toThrow();
+            expect(() => validateNoSpecialChars('test_query')).not.toThrow();
+            expect(() => validateNoSpecialChars('test.query')).not.toThrow();
+            expect(() => validateNoSpecialChars('test@query')).not.toThrow();
+        });
+    });
+
+    describe('validateQueryComplexity', () => {
+        test('should reject queries with too many terms', () => {
+            const longQuery = Array(25).fill('term').join(' ');
+            expect(() => validateQueryComplexity(longQuery)).toThrow('Query too complex: too many terms');
+        });
+
+        test('should reject queries with too many operators', () => {
+            // This has 3 terms but 12 operators (should hit operator limit first)
+            const complexQuery = 'a AND a OR a AND a OR a AND a OR a AND a OR a AND a OR a AND a OR a';
+            expect(() => validateQueryComplexity(complexQuery)).toThrow('Query too complex: too many operators');
+        });
+
+        test('should reject queries with too many parentheses', () => {
+            const complexQuery = '((((((((((((((((((((term))))))))))))))))))))';
+            expect(() => validateQueryComplexity(complexQuery)).toThrow('Query too complex: too many parentheses');
+        });
+
+        test('should allow reasonable queries', () => {
+            expect(() => validateQueryComplexity('simple query')).not.toThrow();
+            expect(() => validateQueryComplexity('term1 AND term2 OR term3')).not.toThrow();
+            expect(() => validateQueryComplexity('(term1 AND term2) OR (term3 AND term4)')).not.toThrow();
+        });
+    });
+
+    describe('validation: query complexity and length limits', () => {
+        test('should reject overly long search queries', () => {
+            const longQuery = 'a'.repeat(501);
+            expect(() => validateSearchQueryParameter(longQuery)).toThrow('Query too long');
+        });
+
+        test('should reject overly long autocomplete queries', () => {
+            const longQuery = 'a'.repeat(101);
+            expect(() => validateAutocompleteQueryParameter(longQuery)).toThrow('Autocomplete query too long');
+        });
+
+        test('should reject search queries with too many terms', () => {
+            const manyTerms = Array(25).fill('term').join(' ');
+            expect(() => validateSearchQueryParameter(manyTerms)).toThrow('Query too complex');
+        });
+    });
+
+    describe('normalizeTerm: character sanitization', () => {
+        test('should remove dangerous characters', () => {
+            expect(normalizeTerm('test{}')).toBe('test');
+            expect(normalizeTerm('test[]')).toBe('test');
+            expect(normalizeTerm('test()')).toBe('test');
+            expect(normalizeTerm('test~')).toBe('test');
+            expect(normalizeTerm('test*')).toBe('test');
+            expect(normalizeTerm('test?')).toBe('test');
+            expect(normalizeTerm('test\\')).toBe('test');
+            expect(normalizeTerm('test+')).toBe('test');
+            expect(normalizeTerm('test`')).toBe('test');
+        });
+
+        test('should preserve safe characters', () => {
+            expect(normalizeTerm('test-query')).toBe('test-query');
+            expect(normalizeTerm('test_query')).toBe('test_query');
+            expect(normalizeTerm('test.query')).toBe('test.query');
+        });
+    });
+
+    describe('middleware: security functions', () => {
+        describe('sanitizeInputs', () => {
+            test('should remove null bytes and control characters', () => {
+                const req = {
+                    query: {
+                        q: 'test\x00query\x01',
+                        param: 'normal\x7fvalue\x9f'
+                    }
+                } as unknown as Request;
+                
+                const res = {} as Response;
+                const next = jest.fn() as NextFunction;
+
+                sanitizeInputs(req, res, next);
+
+                expect(req.query.q).toBe('testquery');
+                expect(req.query.param).toBe('normalvalue');
+                expect(next).toHaveBeenCalled();
+            });
+
+            test('should not modify non-string values', () => {
+                const req = {
+                    query: {
+                        q: 'string\x00value',
+                        num: 123,
+                        bool: true,
+                        obj: { key: 'value' }
+                    }
+                } as unknown as Request;
+                
+                const res = {} as Response;
+                const next = jest.fn() as NextFunction;
+
+                sanitizeInputs(req, res, next);
+
+                expect(req.query.q).toBe('stringvalue');
+                expect(req.query.num).toBe(123);
+                expect(req.query.bool).toBe(true);
+                expect(req.query.obj).toEqual({ key: 'value' });
+                expect(next).toHaveBeenCalled();
+            });
+        });
+
+        describe('addSecurityHeaders', () => {
+            test('should add all required security headers', () => {
+                const req = {} as Request;
+                const res = {
+                    setHeader: jest.fn()
+                } as unknown as Response;
+                const next = jest.fn() as NextFunction;
+
+                addSecurityHeaders(req, res, next);
+
+                expect(res.setHeader).toHaveBeenCalledWith('X-Content-Type-Options', 'nosniff');
+                expect(res.setHeader).toHaveBeenCalledWith('X-Frame-Options', 'DENY');
+                expect(res.setHeader).toHaveBeenCalledWith('X-XSS-Protection', '1; mode=block');
+                expect(res.setHeader).toHaveBeenCalledWith('Referrer-Policy', 'strict-origin-when-cross-origin');
+                expect(next).toHaveBeenCalled();
+            });
         });
     });
 });

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Response } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { AnnoSearchError, AnnoSearchNetworkError, AnnoSearchValidationError, AnnoSearchParseError, AnnoSearchNotFoundError } from './errors';
 import { AxiosError } from 'axios';
 import logger from './logger'; // Import Pino logger instance
@@ -110,10 +110,90 @@ export function normalizeTerm(term: string): string {
     return term
         .trim()
         .toLowerCase()
-        .replace(/^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$/gu, ""); 
+        // More restrictive: only allow letters, numbers, and safe punctuation
+        .replace(/^[^\p{L}\p{N}\-_.]+|[^\p{L}\p{N}\-_.]+$/gu, "")
+        // Remove any remaining potentially dangerous characters
+        .replace(/[{}[\]()~*?\\+"`]/g, "");
 }
 
 export function escapeRegex(term: string): string {
     // Escape special characters in the term to make it regex-safe
     return term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Escape special Quickwit query characters to prevent DSL injection
+ */
+export function escapeQuickwitQuery(input: string): string {
+    // Escape special Quickwit query characters
+    return input.replace(/\\/g, '\\\\')
+                .replace(/"/g, '\\"')
+                .replace(/'/g, "\\'")
+                .replace(/[+~*?{}[\]()]/g, '\\$&');
+}
+
+/**
+ * More aggressive sanitization for field values
+ */
+export function sanitizeFieldValue(value: string): string {
+    return value.replace(/[^a-zA-Z0-9\s\-_.@]/g, '');
+}
+
+/**
+ * Validate that input doesn't contain potentially dangerous characters
+ */
+export function validateNoSpecialChars(input: string): void {
+    const dangerousChars = /[{}[\]()~*?\\+"`]/;
+    if (dangerousChars.test(input)) {
+        throw new AnnoSearchValidationError('Input contains invalid characters');
+    }
+}
+
+/**
+ * Validate query complexity to prevent complex injection attacks
+ */
+export function validateQueryComplexity(query: string): void {
+    const termCount = query.split(/\s+/).length;
+    const operatorCount = (query.match(/\b(AND|OR|NOT)\b/gi) || []).length;
+    const parenthesesCount = (query.match(/[()]/g) || []).length;
+    
+    if (operatorCount > 10) {
+        throw new AnnoSearchValidationError('Query too complex: too many operators');
+    }
+    if (parenthesesCount > 20) {
+        throw new AnnoSearchValidationError('Query too complex: too many parentheses');
+    }
+    if (termCount > 20) {
+        throw new AnnoSearchValidationError('Query too complex: too many terms');
+    }
+}
+
+/**
+ * Middleware to sanitize input parameters and remove potentially dangerous characters
+ */
+export function sanitizeInputs(req: Request, res: Response, next: NextFunction): void {
+    try {
+        // Sanitize query parameters
+        for (const [key, value] of Object.entries(req.query)) {
+            if (typeof value === 'string') {
+                // Remove null bytes and control characters
+                const sanitized = value.replace(/[\x00-\x1f\x7f-\x9f]/g, '');
+                req.query[key] = sanitized;
+            }
+        }
+        next();
+    } catch (error) {
+        throw new AnnoSearchValidationError('Invalid input detected');
+    }
+}
+
+/**
+ * Middleware to add security headers
+ */
+export function addSecurityHeaders(req: Request, res: Response, next: NextFunction): void {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
 }
