@@ -477,6 +477,99 @@ describe('Utils: security functions', () => {
         });
     });
 
+    describe('autocomplete: punctuation handling', () => {
+        test('should remove trailing punctuation from terms', () => {
+            // Test the punctuation removal regex pattern
+            const testCases = [
+                { input: 'word.', expected: 'word' },
+                { input: 'word,', expected: 'word' },
+                { input: 'word;', expected: 'word' },
+                { input: 'word:', expected: 'word' },
+                { input: 'word!', expected: 'word' },
+                { input: 'word?', expected: 'word' },
+                { input: 'word"', expected: 'word' },
+                { input: "word'", expected: 'word' },
+                { input: 'word)', expected: 'word' },
+                { input: 'word]', expected: 'word' },
+                { input: 'word}', expected: 'word' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should handle multiple trailing punctuation marks', () => {
+            const testCases = [
+                { input: 'word...', expected: 'word' },
+                { input: 'word.,!', expected: 'word' },
+                { input: 'word")', expected: 'word' },
+                { input: 'sentence.";', expected: 'sentence' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should preserve punctuation in the middle of words', () => {
+            const testCases = [
+                { input: 'don\'t.', expected: 'don\'t' },
+                { input: 'U.S.A.', expected: 'U.S.A' },
+                { input: 'e-mail,', expected: 'e-mail' },
+                { input: 'test.com.', expected: 'test.com' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should not affect words without trailing punctuation', () => {
+            const testCases = ['word', 'test', 'example', 'normal'];
+
+            testCases.forEach((input) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(input);
+            });
+        });
+
+        test('should handle edge cases', () => {
+            const testCases = [
+                { input: '', expected: '' },
+                { input: '.', expected: '' },
+                { input: '...', expected: '' },
+                { input: 'a.', expected: 'a' },
+                { input: '123.', expected: '123' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should integrate properly with normalizeTerm', () => {
+            // Test the full pipeline: clean punctuation then normalize
+            const testCases = [
+                { input: 'Test.', expectedCleaned: 'Test', expectedNormalized: 'test' },
+                { input: 'WORD!', expectedCleaned: 'WORD', expectedNormalized: 'word' },
+                { input: 'Mixed-Case,', expectedCleaned: 'Mixed-Case', expectedNormalized: 'mixed-case' },
+            ];
+
+            testCases.forEach(({ input, expectedCleaned, expectedNormalized }) => {
+                const cleaned = input.replace(/[.,;:!?'")\]\}]+$/, '');
+                expect(cleaned).toBe(expectedCleaned);
+                
+                const normalized = normalizeTerm(cleaned);
+                expect(normalized).toBe(expectedNormalized);
+            });
+        });
+    });
+
     describe('middleware: security functions', () => {
         describe('sanitizeInputs', () => {
             test('should remove null bytes and control characters', () => {
