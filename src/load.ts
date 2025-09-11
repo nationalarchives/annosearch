@@ -88,7 +88,9 @@ function processAutocompleteTerms(parser: any) {
             : (lang || '');
 
         for (const term of body.value.split(/\s+/)) {
-            const normalizedTerm = normalizeTerm(term);
+            // Remove trailing punctuation before normalization
+            const cleanedTerm = term.replace(/[.,;:!?'")\]\}]+$/, '');
+            const normalizedTerm = normalizeTerm(cleanedTerm);
             if (normalizedTerm.length > 3) {
                 incrementTerm(normalizedTerm, language);
             }
