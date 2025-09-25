@@ -10,6 +10,7 @@ interface Config {
     host: string;
     corsOrigin: string;
     searchUrl: string;
+    snippetLength: number;
 }
 
 function loadConfig(): Config {
@@ -19,6 +20,7 @@ function loadConfig(): Config {
         host: process.env.ANNOSEARCH_HOST || '0.0.0.0',
         corsOrigin: process.env.ANNOSEARCH_CORS_ORIGIN || '*',
         searchUrl: process.env.ANNOSEARCH_PUBLIC_URL || 'http://localhost:3000',
+        snippetLength: parseInt(process.env.ANNOSEARCH_SNIPPET_LENGTH || '25'),
     };
 }
 
@@ -28,13 +30,15 @@ class AnnoSearch {
     private host: string;
     private corsOrigin: string;
     private searchUrl: string;
+    private snippetLength: number;
 
-    constructor({ maxHits, port, host, corsOrigin, searchUrl }: Config = loadConfig()) {
+    constructor({ maxHits, port, host, corsOrigin, searchUrl, snippetLength }: Config = loadConfig()) {
         this.maxHits = maxHits;
         this.port = port;
         this.host = host;
         this.corsOrigin = corsOrigin;
         this.searchUrl = searchUrl;
+        this.snippetLength = snippetLength;
     }
 
     getHost(): string {
@@ -77,12 +81,20 @@ class AnnoSearch {
         this.searchUrl = searchUrl;
     }
 
+    getSnippetLength(): number {
+        return this.snippetLength;
+    }
+
+    setSnippetLength(snippetLength: number) {
+        this.snippetLength = snippetLength;
+    }
+
     async loadIndex(indexId: string, uri: string, type: string, commit: boolean) {
         return await loadFunction(indexId, uri, type, commit);
     }
 
     async searchIndex(indexId: string, query: string, motivation: string, page: number, date: string, user: string) {
-        return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl, date, user);
+        return searchFunction(indexId, query, motivation, this.maxHits, page, this.searchUrl, date, user, this.snippetLength);
     }
     
     async searchAutocomplete(indexId: string, query: string, ignoredParams: string[]) {

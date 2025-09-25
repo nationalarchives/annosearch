@@ -192,6 +192,9 @@ Configure AnnoSearch by setting the following environment variables:
 - **`ANNOSEARCH_CORS_ORIGIN`**: Cors origin.
   - **Default**: `*`
 
+- **`ANNOSEARCH_SNIPPET_LENGTH`**: Length of text snippets returned in search results.
+  - **Default**: `25`
+
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
 
 ## License

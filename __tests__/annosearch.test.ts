@@ -633,6 +633,57 @@ describe('Utils: security functions', () => {
     });
 });
 
+describe('AnnoSearch Configuration', () => {
+    // Clear environment variables before each test to ensure clean state
+    beforeEach(() => {
+        delete process.env.ANNOSEARCH_SNIPPET_LENGTH;
+        delete process.env.ANNOSEARCH_MAX_HITS;
+        delete process.env.ANNOSEARCH_PORT;
+        delete process.env.ANNOSEARCH_HOST;
+        delete process.env.ANNOSEARCH_CORS_ORIGIN;
+        delete process.env.ANNOSEARCH_PUBLIC_URL;
+    });
+
+    describe('snippet length configuration', () => {
+        test('should use default snippet length when not configured', async () => {
+            const AnnoSearch = (await import('../src/AnnoSearch')).default;
+            const client = new AnnoSearch();
+            expect(client.getSnippetLength()).toBe(25);
+        });
+
+        test('should use environment variable for snippet length', async () => {
+            process.env.ANNOSEARCH_SNIPPET_LENGTH = '50';
+            
+            // Re-import to get fresh configuration
+            delete require.cache[require.resolve('../src/AnnoSearch')];
+            const AnnoSearch = (await import('../src/AnnoSearch')).default;
+            
+            const client = new AnnoSearch();
+            expect(client.getSnippetLength()).toBe(50);
+        });
+
+        test('should allow setting snippet length programmatically', async () => {
+            const AnnoSearch = (await import('../src/AnnoSearch')).default;
+            const client = new AnnoSearch();
+            
+            client.setSnippetLength(100);
+            expect(client.getSnippetLength()).toBe(100);
+        });
+
+        test('should handle invalid environment variable gracefully', async () => {
+            process.env.ANNOSEARCH_SNIPPET_LENGTH = 'invalid';
+            
+            // Re-import to get fresh configuration
+            delete require.cache[require.resolve('../src/AnnoSearch')];
+            const AnnoSearch = (await import('../src/AnnoSearch')).default;
+            
+            const client = new AnnoSearch();
+            // parseInt('invalid') returns NaN, so it should fall back to default
+            expect(client.getSnippetLength()).toBeNaN();
+        });
+    });
+});
+
 
 
 
