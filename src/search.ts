@@ -53,7 +53,7 @@ function buildSearchQueryFromString(qString: string): string {
         .join(" AND ");
 }
 
-export async function searchIndex(indexId: string, q: string, motivation: string, maxHits: number, page: number, searchUrl: string, date: string, user: string) {
+export async function searchIndex(indexId: string, q: string, motivation: string, maxHits: number, page: number, searchUrl: string, date: string, user: string, snippetLength: number = 25) {
     const startOffset = page * maxHits;
     validateSearchQueryParameter(q);
     validatePageNumber(page);
@@ -77,7 +77,7 @@ export async function searchIndex(indexId: string, q: string, motivation: string
 
     if (response.status === 200 && response.data) {
         const result = makeSearchResponse(indexId, response.data, searchUrl, q, motivation, user, maxHits, page, date);
-        return highlightTerms(result, q);
+        return highlightTerms(result, q, snippetLength);
     } else {
         throw new AnnoSearchValidationError('Failed to search index');
     }
