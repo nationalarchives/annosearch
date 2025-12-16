@@ -197,6 +197,10 @@ Configure AnnoSearch by setting the following environment variables:
 
 Adjust these values as needed to customize AnnoSearch’s configuration and behavior.
 
+## Compatibility
+
+Annosearch is built using the [maniiifest parser](https://github.com/jptmoore/maniiifest). To test your manifest or collection with this parser use the following [online validator](https://maniiifest.onrender.com/).
+
 ## License
 
 This project is licensed under the MIT License.
