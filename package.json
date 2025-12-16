@@ -1,6 +1,6 @@
 {
   "name": "annosearch",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "main": "dist/index.js",
   "files": [
     "dist/**/*"
@@ -35,7 +35,6 @@
     "axios": "^1.7.9",
     "cors": "^2.8.5",
     "express": "^4.21.2",
-    "i": "^0.3.7",
     "jest": "^29.7.0",
     "maniiifest": "^1.4.8",
     "nock": "^13.5.6",
