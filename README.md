@@ -164,6 +164,12 @@ annosearch serve --port <port> --host <host> --cors <cors-origin>
 - `host`: The host on which to run the server.
 - `cors`: The cors origin.
 
+For example, if you have indexed a collection called `foobar`, you can search it via:
+
+```bash
+http://localhost:3000/foobar/search?q=baz
+```
+
 #### `version`
 
 Display the current version of AnnoSearch.
