@@ -477,6 +477,156 @@ describe('Utils: security functions', () => {
         });
     });
 
+    describe('autocomplete: term cleaning and HTML handling', () => {
+        test('should remove HTML tags from text', () => {
+            const testCases = [
+                { input: '<p>piazza', expected: 'piazza' },
+                { input: '<div>word</div>', expected: 'word' },
+                { input: 'text<br>more', expected: 'text more' },
+                { input: 'hello <span class="highlight">world</span>', expected: 'hello world' },
+                { input: '<img src="test.jpg">caption', expected: 'caption' },
+                { input: 'before<br/>after', expected: 'before after' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/<[^>]*>/g, ' ');
+                const words = cleaned.split(/\s+/).filter(Boolean);
+                expect(words.join(' ')).toBe(expected);
+            });
+        });
+
+        test('should remove leading non-alphanumeric characters', () => {
+            const testCases = [
+                { input: '>word', expected: 'word' },
+                { input: '&hello', expected: 'hello' },
+                { input: '"quoted', expected: 'quoted' },
+                { input: '(parenthesis', expected: 'parenthesis' },
+                { input: '...dots', expected: 'dots' },
+                { input: '#hashtag', expected: 'hashtag' },
+                { input: '@mention', expected: 'mention' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/^[^\p{L}\p{N}]+/u, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should remove trailing non-alphanumeric characters', () => {
+            const testCases = [
+                { input: 'word.', expected: 'word' },
+                { input: 'test,', expected: 'test' },
+                { input: 'sentence!', expected: 'sentence' },
+                { input: 'question?', expected: 'question' },
+                { input: 'quote"', expected: 'quote' },
+                { input: 'parenthesis)', expected: 'parenthesis' },
+                { input: 'multiple...', expected: 'multiple' },
+                { input: 'mixed.,!', expected: 'mixed' },
+                { input: 'semicolon;', expected: 'semicolon' },
+                { input: 'colon:', expected: 'colon' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input.replace(/[^\p{L}\p{N}]+$/u, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should handle both leading and trailing cleanup together', () => {
+            const testCases = [
+                { input: '>word.', expected: 'word' },
+                { input: '"quoted"', expected: 'quoted' },
+                { input: '(test)', expected: 'test' },
+                { input: '...middle...', expected: 'middle' },
+                { input: '#tag!', expected: 'tag' },
+                { input: '&amp;', expected: 'amp' },
+                { input: '>>>cleaned<<<', expected: 'cleaned' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input
+                    .replace(/^[^\p{L}\p{N}]+/u, '')
+                    .replace(/[^\p{L}\p{N}]+$/u, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should handle HTML tags combined with punctuation', () => {
+            const testCases = [
+                { input: '<p>word.</p>', expected: 'word' },
+                { input: '<div>test!</div>', expected: 'test' },
+                { input: '<span>hello,</span>', expected: 'hello' },
+                { input: '<em>"quoted"</em>', expected: 'quoted' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                // Simulate the full cleaning pipeline
+                const htmlStripped = input.replace(/<[^>]*>/g, ' ');
+                const words = htmlStripped.split(/\s+/).filter(Boolean);
+                const cleaned = words.map(word => 
+                    word
+                        .replace(/^[^\p{L}\p{N}]+/u, '')
+                        .replace(/[^\p{L}\p{N}]+$/u, '')
+                ).filter(Boolean);
+                
+                expect(cleaned[0]).toBe(expected);
+            });
+        });
+
+        test('should preserve valid words without changes', () => {
+            const testCases = ['word', 'test', 'example', 'normal', 'hello123', '123abc'];
+
+            testCases.forEach((input) => {
+                const cleaned = input
+                    .replace(/^[^\p{L}\p{N}]+/u, '')
+                    .replace(/[^\p{L}\p{N}]+$/u, '');
+                expect(cleaned).toBe(input);
+            });
+        });
+
+        test('should handle edge cases', () => {
+            const testCases = [
+                { input: '', expected: '' },
+                { input: '...', expected: '' },
+                { input: '###', expected: '' },
+                { input: 'a.', expected: 'a' },
+                { input: '.a', expected: 'a' },
+                { input: '123.', expected: '123' },
+                { input: '.123', expected: '123' },
+            ];
+
+            testCases.forEach(({ input, expected }) => {
+                const cleaned = input
+                    .replace(/^[^\p{L}\p{N}]+/u, '')
+                    .replace(/[^\p{L}\p{N}]+$/u, '');
+                expect(cleaned).toBe(expected);
+            });
+        });
+
+        test('should integrate properly with normalizeTerm for full pipeline', () => {
+            const testCases = [
+                { input: '<p>Test.</p>', expectedCleaned: 'Test', expectedNormalized: 'test' },
+                { input: '"WORD!"', expectedCleaned: 'WORD', expectedNormalized: 'word' },
+                { input: '<div>Mixed-Case,</div>', expectedCleaned: 'Mixed-Case', expectedNormalized: 'mixed-case' },
+                { input: '>hello<', expectedCleaned: 'hello', expectedNormalized: 'hello' },
+            ];
+
+            testCases.forEach(({ input, expectedCleaned, expectedNormalized }) => {
+                // Simulate the full pipeline
+                const htmlStripped = input.replace(/<[^>]*>/g, ' ');
+                const words = htmlStripped.split(/\s+/).filter(Boolean);
+                const cleaned = words[0]
+                    .replace(/^[^\p{L}\p{N}]+/u, '')
+                    .replace(/[^\p{L}\p{N}]+$/u, '');
+                
+                expect(cleaned).toBe(expectedCleaned);
+                
+                const normalized = normalizeTerm(cleaned);
+                expect(normalized).toBe(expectedNormalized);
+            });
+        });
+    });
+
     describe('autocomplete: punctuation handling', () => {
         test('should remove trailing punctuation from terms', () => {
             // Test the punctuation removal regex pattern
