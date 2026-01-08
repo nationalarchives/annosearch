@@ -3,7 +3,7 @@ import path from 'path';
 import axios from 'axios';
 import fs from 'fs';
 import nock from 'nock';
-import { escapeQuickwitQuery, validateNoSpecialChars, validateQueryComplexity, normalizeTerm, sanitizeInputs, addSecurityHeaders } from '../src/utils';
+import { escapeQuickwitQuery, validateNoSpecialChars, validateQueryComplexity, normalizeTerm, sanitizeInputs, addSecurityHeaders, stripHtmlTagsWithSpaces, stripHtmlTagsClean } from '../src/utils';
 import { validateSearchQueryParameter, validateAutocompleteQueryParameter } from '../src/validate';
 import { AnnoSearchValidationError } from '../src/errors';
 import { Request, Response, NextFunction } from 'express';
@@ -381,6 +381,152 @@ describe('CLI: delete command', () => {
 });
 
 describe('Utils: security functions', () => {
+    describe('HTML stripping functions', () => {
+        describe('stripHtmlTagsWithSpaces', () => {
+            test('should replace HTML tags with spaces for word separation', () => {
+                const { stripHtmlTagsWithSpaces } = require('../src/utils');
+                
+                const testCases = [
+                    { input: '<p>hello</p>world', expected: ' hello world' },
+                    { input: 'text<br>more', expected: 'text more' },
+                    { input: 'word<div>another</div>word', expected: 'word another word' },
+                    { input: 'hello<span class="highlight">world</span>', expected: 'hello world ' },
+                    { input: '<img src="test.jpg"/>caption', expected: ' caption' },
+                    { input: 'before<br/>after', expected: 'before after' },
+                ];
+
+                testCases.forEach(({ input, expected }) => {
+                    expect(stripHtmlTagsWithSpaces(input)).toBe(expected);
+                });
+            });
+
+            test('should preserve text without HTML tags', () => {
+                const { stripHtmlTagsWithSpaces } = require('../src/utils');
+                
+                const testCases = ['hello world', 'simple text', 'no tags here'];
+                
+                testCases.forEach((input) => {
+                    expect(stripHtmlTagsWithSpaces(input)).toBe(input);
+                });
+            });
+
+            test('should handle multiple consecutive tags', () => {
+                const { stripHtmlTagsWithSpaces } = require('../src/utils');
+                
+                expect(stripHtmlTagsWithSpaces('<p><span>text</span></p>')).toBe('  text  ');
+                expect(stripHtmlTagsWithSpaces('<div><b><i>nested</i></b></div>')).toBe('   nested   ');
+            });
+
+            test('should handle self-closing tags', () => {
+                const { stripHtmlTagsWithSpaces } = require('../src/utils');
+                
+                expect(stripHtmlTagsWithSpaces('line1<br/>line2')).toBe('line1 line2');
+                expect(stripHtmlTagsWithSpaces('image<img src="test.jpg"/>text')).toBe('image text');
+            });
+
+            test('should handle complex HTML attributes', () => {
+                const { stripHtmlTagsWithSpaces } = require('../src/utils');
+                
+                const input = '<div class="container" id="main" data-test="value">content</div>';
+                expect(stripHtmlTagsWithSpaces(input)).toBe(' content ');
+            });
+        });
+
+        describe('stripHtmlTagsClean', () => {
+            test('should preserve well-formed HTML but remove malformed tags', () => {
+                const { stripHtmlTagsClean } = require('../src/utils');
+                
+                const testCases = [
+                    // Well-formed HTML should be preserved
+                    { input: '<p>hello</p>', expected: '<p>hello</p>' },
+                    { input: '<div>word</div>', expected: '<div>word</div>' },
+                    { input: '<span class="highlight">text</span>', expected: '<span class="highlight">text</span>' },
+                    { input: '<img src="test.jpg"/>caption', expected: '<img src="test.jpg"/>caption' },
+                    { input: 'before<br/>after', expected: 'before<br/>after' },
+                    
+                    // Complete opening tags should be preserved (might be completed elsewhere)
+                    { input: '<p>piazza', expected: '<p>piazza' }, // Complete opening tag preserved
+                    
+                    // Malformed/incomplete tags should be removed
+                    { input: 'div>text', expected: 'text' }, // Orphaned closing bracket
+                    { input: 'text</div', expected: 'text' }, // Incomplete closing tag
+                    { input: '<span class="hi', expected: '' }, // Incomplete tag with attributes
+                    { input: 'word</sp', expected: 'word' }, // Incomplete closing tag
+                    { input: 'caption<img src="test.jpg"', expected: 'caption' }, // Incomplete self-closing tag
+                ];
+
+                testCases.forEach(({ input, expected }) => {
+                    expect(stripHtmlTagsClean(input)).toBe(expected);
+                });
+            });
+
+            test('should preserve text without HTML tags', () => {
+                const { stripHtmlTagsClean } = require('../src/utils');
+                
+                const testCases = ['hello world', 'simple text', 'no tags here'];
+                
+                testCases.forEach((input) => {
+                    expect(stripHtmlTagsClean(input)).toBe(input);
+                });
+            });
+
+            test('should handle mixed well-formed and malformed tags', () => {
+                const { stripHtmlTagsClean } = require('../src/utils');
+                
+                expect(stripHtmlTagsClean('div>some <em>text</em> here<p')).toBe('some <em>text</em> here');
+                expect(stripHtmlTagsClean('<span>content</p')).toBe('<span>content');
+                expect(stripHtmlTagsClean('p>middle <strong>bold</strong><div')).toBe('middle <strong>bold</strong>');
+            });
+
+            test('should handle edge cases', () => {
+                const { stripHtmlTagsClean } = require('../src/utils');
+                
+                expect(stripHtmlTagsClean('')).toBe('');
+                expect(stripHtmlTagsClean('<>')).toBe('<>'); // Well-formed empty tag
+                expect(stripHtmlTagsClean('<')).toBe(''); // Just opening bracket
+                expect(stripHtmlTagsClean('>')).toBe(''); // Just closing bracket at start
+                expect(stripHtmlTagsClean('text>')).toBe(''); // Orphaned closing bracket removes entire string
+            });
+
+            test('should be ideal for snippet prefixes and suffixes', () => {
+                const { stripHtmlTagsClean } = require('../src/utils');
+                
+                // Test cases that would occur in snippet context
+                const snippetCases = [
+                    { input: '<p>', expected: '<p>' }, // Complete opening tag preserved
+                    { input: 'div> di San Lorenzo', expected: 'di San Lorenzo' }, // Orphaned closing bracket
+                    { input: 'text in <span class="hi', expected: 'text in' }, // Incomplete tag at end
+                    { input: 'ght">highlighted</span>', expected: 'highlighted</span>' }, // Orphaned text + complete tag
+                    { input: 'some <em>text</em> here</div', expected: 'some <em>text</em> here' }, // Complete tag + incomplete end
+                    { input: '<div>complete</div>', expected: '<div>complete</div>' }, // Well-formed should be preserved
+                ];
+
+                snippetCases.forEach(({ input, expected }) => {
+                    expect(stripHtmlTagsClean(input)).toBe(expected);
+                });
+            });
+        });
+
+        describe('HTML stripping function differences', () => {
+            test('should demonstrate the difference between the two functions', () => {
+                const { stripHtmlTagsWithSpaces, stripHtmlTagsClean } = require('../src/utils');
+                
+                const testInput = '<p>word1</p><div>word2</div>';
+                
+                // With spaces: removes all tags, maintains word separation with spaces
+                expect(stripHtmlTagsWithSpaces(testInput)).toBe(' word1  word2 ');
+                
+                // Clean: preserves well-formed HTML, only removes malformed tags
+                expect(stripHtmlTagsClean(testInput)).toBe('<p>word1</p><div>word2</div>');
+                
+                // Example with malformed HTML
+                const malformedInput = '<p>word1</p><div class="test';
+                expect(stripHtmlTagsWithSpaces(malformedInput)).toBe(' word1 <div class="test');
+                expect(stripHtmlTagsClean(malformedInput)).toBe('<p>word1</p>');
+            });
+        });
+    });
+
     describe('escapeQuickwitQuery', () => {
         test('should escape special Quickwit characters', () => {
             expect(escapeQuickwitQuery('test"query')).toBe('test\\"query');

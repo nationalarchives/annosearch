@@ -1,7 +1,7 @@
 import { promises as fs } from 'fs';
 import { Maniiifest } from 'maniiifest';
 import * as path from 'path';
-import { normalizeTerm, escapeRegex } from './utils';
+import { normalizeTerm, escapeRegex, stripHtmlTagsClean } from './utils';
 
 async function readJsonFromFile(filePath: string): Promise<any> {
     try {
@@ -71,6 +71,11 @@ export function highlightTerms(annotation_page: any, query: string, snippetLengt
                         const exactMatch = match[0]; // Capture the exact match from the original text
                         let prefix = bodyValue.substring(Math.max(0, match.index - snippetLength), match.index);
                         let suffix = bodyValue.substring(match.index + exactMatch.length, Math.min(bodyValue.length, match.index + exactMatch.length + snippetLength));
+                        
+                        // Strip HTML tags from prefix and suffix to ensure safe plain text display
+                        prefix = stripHtmlTagsClean(prefix);
+                        suffix = stripHtmlTagsClean(suffix);
+                        
                         // Add ellipses if the prefix or suffix is truncated
                         if (match.index - snippetLength > 0) {
                             prefix = '...' + prefix;

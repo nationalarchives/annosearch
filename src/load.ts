@@ -1,5 +1,5 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl, normalizeTerm } from './utils';
+import { fetchJson, createJsonl, normalizeTerm, stripHtmlTagsWithSpaces } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { createClient } from './quickwit';
 
@@ -88,7 +88,7 @@ function processAutocompleteTerms(parser: any) {
             : (lang || '');
 
         // First strip HTML tags from the entire text, then split into terms
-        const textWithoutHtml = body.value.replace(/<[^>]*>/g, ' ');
+        const textWithoutHtml = stripHtmlTagsWithSpaces(body.value);
         
         for (const term of textWithoutHtml.split(/\s+/)) {
             // Remove leading and trailing non-letter/number characters before normalization
