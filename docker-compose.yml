@@ -13,8 +13,8 @@ services:
     depends_on:
       - quickwit
     environment:
-      ANNOSEARCH_PUBLIC_URL: http://localhost:3000
-      QUICKWIT_BASE_URL: http://quickwit:7280/api/v1/
+      ANNOSEARCH_PUBLIC_URL: ${ANNOSEARCH_PUBLIC_URL:-http://localhost:3000}
+      QUICKWIT_BASE_URL: ${QUICKWIT_BASE_URL:-http://quickwit:7280/api/v1/}
     ports:
       - "3000:3000"
     command: ["serve"]
