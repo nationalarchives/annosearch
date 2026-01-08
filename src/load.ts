@@ -1,5 +1,5 @@
 import { Maniiifest } from 'maniiifest';
-import { fetchJson, createJsonl, normalizeTerm } from './utils';
+import { fetchJson, createJsonl, normalizeTerm, stripHtmlTagsWithSpaces } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { createClient } from './quickwit';
 
@@ -87,9 +87,15 @@ function processAutocompleteTerms(parser: any) {
             ? (lang.length > 0 ? lang[0] : '')
             : (lang || '');
 
-        for (const term of body.value.split(/\s+/)) {
-            // Remove trailing punctuation before normalization
-            const cleanedTerm = term.replace(/[.,;:!?'")\]\}]+$/, '');
+        // First strip HTML tags from the entire text, then split into terms
+        const textWithoutHtml = stripHtmlTagsWithSpaces(body.value);
+        
+        for (const term of textWithoutHtml.split(/\s+/)) {
+            // Remove leading and trailing non-letter/number characters before normalization
+            const cleanedTerm = term
+                .replace(/^[^\p{L}\p{N}]+/u, '') // Remove leading non-letter/number characters
+                .replace(/[^\p{L}\p{N}]+$/u, ''); // Remove trailing non-letter/number characters
+            
             const normalizedTerm = normalizeTerm(cleanedTerm);
             if (normalizedTerm.length > 3) {
                 incrementTerm(normalizedTerm, language);

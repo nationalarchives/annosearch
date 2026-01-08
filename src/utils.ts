@@ -103,6 +103,30 @@ export function createJsonl(data: unknown | unknown[]): string {
 }
 
 /**
+ * Strip HTML tags from text content, replacing with spaces to maintain word separation
+ * Used for processing text where HTML tags separate words (e.g., autocomplete term extraction)
+ */
+export function stripHtmlTagsWithSpaces(text: string): string {
+    return text.replace(/<[^>]*>/g, ' ');
+}
+
+/**
+ * Strip HTML tags from text content completely for clean display text
+ * Used for creating clean snippets and display text (e.g., highlighting prefixes/suffixes)
+ * Removes only genuinely malformed HTML syntax that could cause display issues
+ */
+export function stripHtmlTagsClean(text: string): string {
+    return text
+        // Remove orphaned closing brackets at start (e.g., "p>text", "div>content")
+        .replace(/^[^<]*>/, '')
+        // Remove incomplete opening tags at end (missing closing bracket, e.g., "text<p", "word<div class=")
+        .replace(/<[^>]*$/, '')
+        // Remove incomplete closing tags at end (e.g., "text</div", "content</sp")
+        .replace(/<\/[^>]*$/, '')
+        .trim();
+}
+
+/**
  * Normalize a term by trimming whitespace, converting to lowercase,
  * and removing non-alphanumeric characters from the start and end.
  */
