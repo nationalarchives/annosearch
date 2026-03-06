@@ -112,42 +112,9 @@ export ANNOSEARCH_VERSION=v0.4.3
 docker compose up
 ```
 
-#### Building the Docker Image
-
-To build the Docker image locally:
-
-```bash
-# Build with docker-compose
-docker compose build
-
-# Or build directly with docker
-docker build -t annosearch .
-```
-
 #### Running Commands with Docker
 
 All AnnoSearch commands can be run with Docker. See the Docker examples under each command in the [Commands](#commands) section below.
-
-#### Verifying the Service
-
-Call the version endpoint to check the service is running.
-```bash
-❯ http :3000/version
-HTTP/1.1 200 OK
-Access-Control-Allow-Credentials: true
-Access-Control-Allow-Origin: *
-Connection: keep-alive
-Content-Length: 19
-Content-Type: application/json; charset=utf-8
-Date: Wed, 11 Jun 2025 13:01:46 GMT
-ETag: W/"13-iZUY2mYGnAauZNa8YzHxtZrPkFE"
-Keep-Alive: timeout=5
-X-Powered-By: Express
-
-{
-    "version": "0.3.6"
-}
-```
 
 ## Commands
 
