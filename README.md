@@ -104,17 +104,7 @@ docker compose build
 docker compose up
 ```
 
-The published image is available at `ghcr.io/annosearch/annosearch:latest`. To use a different repository or version, set environment variables:
-
-```bash
-export GITHUB_REPOSITORY=your-org/annosearch
-export ANNOSEARCH_VERSION=v0.4.3
-docker compose up
-```
-
-#### Running Commands with Docker
-
-All AnnoSearch commands can be run with Docker. See the Docker examples under each command in the [Commands](#commands) section below.
+The published image is available at `ghcr.io/annosearch/annosearch:latest`.
 
 ## Commands
 
