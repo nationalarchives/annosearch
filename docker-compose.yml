@@ -9,6 +9,7 @@ services:
       - ./qwdata:/quickwit/qwdata
 
   annosearch:
+    image: ghcr.io/${GITHUB_REPOSITORY:-annosearch/annosearch}:${ANNOSEARCH_VERSION:-latest}
     build: .
     depends_on:
       - quickwit
