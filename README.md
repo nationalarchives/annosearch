@@ -74,7 +74,9 @@ After Quickwit finishes ingesting and indexing the data we can perform a search.
 
 ## Usage
 
-### Installation
+You can use AnnoSearch either natively with npm or via Docker containers.
+
+### Native Installation (npm)
 
 Make sure you have Quickwit installed and [running](https://quickwit.io/docs/get-started/quickstart) and then install AnnoSearch.
 
@@ -82,9 +84,11 @@ Make sure you have Quickwit installed and [running](https://quickwit.io/docs/get
 npm install -g annosearch
 ```
 
-### Deployment
+Once installed, you can use all the commands directly (see [Commands](#commands) section below).
 
-Once you have created your data and are ready to deploy you can use Docker to start the service and serve the qwdata directory containing the Quickwit data.
+### Docker Usage
+
+For containerized deployments, you can use Docker instead of installing npm packages.
 
 #### Using Docker Compose
 
@@ -108,7 +112,7 @@ export ANNOSEARCH_VERSION=v0.4.3
 docker compose up
 ```
 
-#### Building Locally
+#### Building the Docker Image
 
 To build the Docker image locally:
 
@@ -119,6 +123,12 @@ docker compose build
 # Or build directly with docker
 docker build -t annosearch .
 ```
+
+#### Running Commands with Docker
+
+All AnnoSearch commands can be run with Docker. See the Docker examples under each command in the [Commands](#commands) section below.
+
+#### Verifying the Service
 
 Call the version endpoint to check the service is running.
 ```bash
@@ -139,7 +149,9 @@ X-Powered-By: Express
 }
 ```
 
-### Commands
+## Commands
+
+The following commands work with both native npm installation and Docker. For each command, expand the "Docker example" section to see how to run it in a container.
 
 #### `init`
 
