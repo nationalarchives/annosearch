@@ -29,3 +29,6 @@ EXPOSE 3000
 
 # Set default entrypoint to the CLI
 ENTRYPOINT ["node", "./dist/index.js"]
+
+# Default command (can be overridden)
+CMD ["serve"]

@@ -86,8 +86,38 @@ npm install -g annosearch
 
 Once you have created your data and are ready to deploy you can use Docker to start the service and serve the qwdata directory containing the Quickwit data.
 
+#### Using Docker Compose
+
+The docker-compose.yml file supports both pulling the published image from GitHub Container Registry (GHCR) or building locally:
+
 ```bash
+# Pull from GHCR (recommended for production)
+docker compose pull
 docker compose up
+
+# Or build locally (for development)
+docker compose build
+docker compose up
+```
+
+The published image is available at `ghcr.io/annosearch/annosearch:latest`. To use a different repository or version, set environment variables:
+
+```bash
+export GITHUB_REPOSITORY=your-org/annosearch
+export ANNOSEARCH_VERSION=v0.4.3
+docker compose up
+```
+
+#### Building Locally
+
+To build the Docker image locally:
+
+```bash
+# Build with docker-compose
+docker compose build
+
+# Or build directly with docker
+docker build -t annosearch .
 ```
 
 Call the version endpoint to check the service is running.
@@ -119,6 +149,22 @@ Initialize a new index with a specified ID.
 annosearch init --index <index-id>
 ```
 
+<details>
+<summary>Docker example</summary>
+
+```bash
+# Using docker-compose
+docker compose run --rm annosearch init --index <index-id>
+
+# Using standalone docker (with published image)
+docker run --rm --network annosearch_default \
+  -e QUICKWIT_BASE_URL=http://quickwit:7280/api/v1/ \
+  -v $(pwd)/qwdata:/quickwit/qwdata \
+  ghcr.io/annosearch/annosearch:latest init --index <index-id>
+```
+
+</details>
+
 #### `load`
 
 Load an index from a URI, specifying the type of content being loaded (e.g., Manifest, Collection, or AnnotationCollection).
@@ -130,6 +176,22 @@ annosearch load --index <index-id> --type <type> --uri <uri>
 - `type`: The type of content (Manifest, Collection, AnnotationCollection).
 - `uri`: The URI to load the content from.
 
+<details>
+<summary>Docker example</summary>
+
+```bash
+# Using docker-compose
+docker compose run --rm annosearch load --index <index-id> --type <type> --uri <uri>
+
+# Using standalone docker (with published image)
+docker run --rm --network annosearch_default \
+  -e QUICKWIT_BASE_URL=http://quickwit:7280/api/v1/ \
+  -v $(pwd)/qwdata:/quickwit/qwdata \
+  ghcr.io/annosearch/annosearch:latest load --index <index-id> --type <type> --uri <uri>
+```
+
+</details>
+
 #### `delete`
 
 Delete an existing index by ID.
@@ -137,6 +199,22 @@ Delete an existing index by ID.
 ```bash
 annosearch delete --index <index-id>
 ```
+
+<details>
+<summary>Docker example</summary>
+
+```bash
+# Using docker-compose
+docker compose run --rm annosearch delete --index <index-id>
+
+# Using standalone docker (with published image)
+docker run --rm --network annosearch_default \
+  -e QUICKWIT_BASE_URL=http://quickwit:7280/api/v1/ \
+  -v $(pwd)/qwdata:/quickwit/qwdata \
+  ghcr.io/annosearch/annosearch:latest delete --index <index-id>
+```
+
+</details>
 
 #### `search`
 
@@ -150,7 +228,23 @@ annosearch search --index <index-id> --query <search-query> [--page <page-number
 - `page`: Optional page number (defaults to 0).
 - `motivation`: Optional space separated list of motivation terms.
 - `date`: Optional space separated list of date ranges.
-- `user`: Optional space separated list of URIs that are the identities of users. 
+- `user`: Optional space separated list of URIs that are the identities of users.
+
+<details>
+<summary>Docker example</summary>
+
+```bash
+# Using docker-compose
+docker compose run --rm annosearch search --index <index-id> --query <search-query>
+
+# Using standalone docker (with published image)
+docker run --rm --network annosearch_default \
+  -e QUICKWIT_BASE_URL=http://quickwit:7280/api/v1/ \
+  -v $(pwd)/qwdata:/quickwit/qwdata \
+  ghcr.io/annosearch/annosearch:latest search --index <index-id> --query <search-query>
+```
+
+</details> 
 
 #### `serve`
 
@@ -170,6 +264,24 @@ For example, if you have indexed a collection called `foobar`, you can search it
 http://localhost:3000/foobar/search?q=baz
 ```
 
+<details>
+<summary>Docker example</summary>
+
+```bash
+# Using docker-compose (recommended)
+docker compose up
+
+# Using standalone docker (with published image)
+docker run --rm --network annosearch_default \
+  -e QUICKWIT_BASE_URL=http://quickwit:7280/api/v1/ \
+  -e ANNOSEARCH_PUBLIC_URL=http://localhost:3000 \
+  -p 3000:3000 \
+  -v $(pwd)/qwdata:/quickwit/qwdata \
+  ghcr.io/annosearch/annosearch:latest serve --port 3000 --host 0.0.0.0
+```
+
+</details>
+
 #### `version`
 
 Display the current version of AnnoSearch.
@@ -177,6 +289,15 @@ Display the current version of AnnoSearch.
 ```bash
 annosearch version
 ```
+
+<details>
+<summary>Docker example</summary>
+
+```bash
+docker run --rm ghcr.io/annosearch/annosearch:latest version
+```
+
+</details>
 
 
 ## Configuration
