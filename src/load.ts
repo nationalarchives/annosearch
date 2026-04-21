@@ -1,4 +1,4 @@
-import { Maniiifest } from 'maniiifest';
+import { Maniiifest, ManiiifestAnnotation, ManiiifestAnnotationPage, ManiiifestAnnotationCollection } from 'maniiifest';
 import { fetchJson, createJsonl, normalizeTerm, stripHtmlTagsWithSpaces } from './utils';
 import { AnnoSearchParseError, AnnoSearchValidationError } from './errors';
 import { createClient } from './quickwit';
@@ -106,7 +106,7 @@ function processAutocompleteTerms(parser: any) {
 
 function* processAnnotationsWorker(parser: any, uri: string, type: string) {
     for (const annotation of parser.iterateAnnotationPageAnnotation()) {
-        const annotation_parser = new Maniiifest(annotation, "Annotation");
+        const annotation_parser = new ManiiifestAnnotation(annotation);
         const modifiedTarget = modifyAnnotationTarget(annotation_parser, uri, type).target;
         yield { ...annotation, target: modifiedTarget };
     }
@@ -125,7 +125,7 @@ async function processAnnotations(indexId: string, uri: string, type: string, pa
             if (!jsonData) {
                 throw new AnnoSearchValidationError('No JSON data returned from fetchJson');
             }
-            currentParser = new Maniiifest(jsonData, "AnnotationPage");
+            currentParser = new ManiiifestAnnotationPage(jsonData);
         } else {
             currentParser = null;
         }
@@ -135,12 +135,12 @@ async function processAnnotations(indexId: string, uri: string, type: string, pa
 
 async function processAnnotationPageRef(indexId: string, uri: string, type: string, annotationPageUrl: string, commit: boolean) {
     const jsonData = await fetchJson(annotationPageUrl);
-    const parser = new Maniiifest(jsonData, "AnnotationPage");
+    const parser = new ManiiifestAnnotationPage(jsonData);
     await processAnnotations(indexId, uri, type, parser, commit);
 }
 
 async function processAnnotationPage(indexId: string, uri: string, type: string, page: any, commit: boolean) {
-    const parser = new Maniiifest(page, "AnnotationPage");
+    const parser = new ManiiifestAnnotationPage(page);
     await processAnnotations(indexId, uri, type, parser, commit);
 }
 
@@ -177,7 +177,7 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
         };
 
         if (page.items) {
-            const parser = new Maniiifest(page, 'AnnotationPage');
+            const parser = new ManiiifestAnnotationPage(page);
             processAutocompleteTerms(parser);
             const annotations = Array.from(processAnnotationsWorker(parser, manifestUrl, type));
             await filterAndProcess(annotations);
@@ -186,7 +186,7 @@ async function processManifest(indexId: string, manifestUrl: string, commit: boo
                 throw new AnnoSearchValidationError('Annotation page ID is undefined');
             }
             const jsonData = await fetchJson(pageId);
-            const parser = new Maniiifest(jsonData, 'AnnotationPage');
+            const parser = new ManiiifestAnnotationPage(jsonData);
             processAutocompleteTerms(parser);
             const annotations = Array.from(processAnnotationsWorker(parser, manifestUrl, type));
             await filterAndProcess(annotations);
@@ -229,7 +229,7 @@ async function processCollection(indexId: string, uri: string, commit: boolean) 
 
 async function processAnnotationCollection(indexId: string, annotationCollectionUrl: string, commit: boolean) {
     const jsonData = await fetchJson(annotationCollectionUrl);
-    const parser = new Maniiifest(jsonData, "AnnotationCollection");
+    const parser = new ManiiifestAnnotationCollection(jsonData);
     const type = parser.getAnnotationCollectionType();
     if (type !== 'AnnotationCollection') {
         throw new AnnoSearchParseError('Should be a W3C annotation collection');

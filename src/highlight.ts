@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import { Maniiifest } from 'maniiifest';
+import { Maniiifest, ManiiifestAnnotation, ManiiifestAnnotationPage } from 'maniiifest';
 import * as path from 'path';
 import { normalizeTerm, escapeRegex, stripHtmlTagsClean } from './utils';
 
@@ -48,12 +48,12 @@ function createItem(
 
 export function highlightTerms(annotation_page: any, query: string, snippetLength = 25): any {
     const terms = query.split(/\s+/).map(normalizeTerm).filter(Boolean); // Split into terms, normalize, remove empty ones
-    const annotationPageParser = new Maniiifest(annotation_page, "AnnotationPage");
+    const annotationPageParser = new ManiiifestAnnotationPage(annotation_page);
     const annotations = annotationPageParser.iterateAnnotationPageAnnotation();
     let matchCounter = 1;
     let annotationItems = [];
     for (const annotation of annotations) {
-        const annotationParser = new Maniiifest(annotation, "Annotation");
+        const annotationParser = new ManiiifestAnnotation(annotation);
         const bodyParser = annotationParser.iterateAnnotationTextualBody();
         for (const body of bodyParser) {
             const bodyValue = body.value;
