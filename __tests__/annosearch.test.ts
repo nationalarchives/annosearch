@@ -4,7 +4,7 @@ import axios from 'axios';
 import fs from 'fs';
 import nock from 'nock';
 import { escapeQuickwitQuery, validateNoSpecialChars, validateQueryComplexity, normalizeTerm, sanitizeInputs, addSecurityHeaders, stripHtmlTagsWithSpaces, stripHtmlTagsClean } from '../src/utils';
-import { validateSearchQueryParameter, validateAutocompleteQueryParameter } from '../src/validate';
+import { validateSearchQueryParameter, validateAutocompleteQueryParameter, validateMotivation } from '../src/validate';
 import { AnnoSearchValidationError } from '../src/errors';
 import { Request, Response, NextFunction } from 'express';
 
@@ -219,7 +219,7 @@ describe('CLI: serve command', () => {
     });
 
     it('API: should return 400 error for invalid motivation', async () => {
-        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&motivation=invalid')).rejects.toMatchObject({
+        await expect(axios.get('http://localhost:3000/test-index/search?q=annotation&motivation=paint*ing')).rejects.toMatchObject({
             response: { status: 400 },
         });
     });
@@ -600,6 +600,49 @@ describe('Utils: security functions', () => {
         test('should reject search queries with too many terms', () => {
             const manyTerms = Array(25).fill('term').join(' ');
             expect(() => validateSearchQueryParameter(manyTerms)).toThrow('Query too complex');
+        });
+    });
+
+    describe('validateMotivation', () => {
+        test('should pass when motivation is empty', () => {
+            expect(() => validateMotivation('')).not.toThrow();
+        });
+
+        test('should pass for a single valid motivation', () => {
+            expect(() => validateMotivation('painting')).not.toThrow();
+        });
+
+        test('should pass for known IIIF motivation values', () => {
+            const known = ['painting', 'supplementing', 'contextualizing', 'contentState', 'highlighting', 'commenting', 'tagging'];
+            known.forEach(m => expect(() => validateMotivation(m)).not.toThrow());
+        });
+
+        test('should pass for an arbitrary custom motivation', () => {
+            expect(() => validateMotivation('myCustomMotivation')).not.toThrow();
+        });
+
+        test('should pass for a space-separated list of motivations', () => {
+            expect(() => validateMotivation('painting tagging')).not.toThrow();
+            expect(() => validateMotivation('painting supplementing contextualizing')).not.toThrow();
+        });
+
+        test('should reject a motivation string that is too long', () => {
+            const longMotivation = 'a'.repeat(101);
+            expect(() => validateMotivation(longMotivation)).toThrow('Invalid motivation parameter: too long');
+        });
+
+        test('should reject a motivation containing special characters', () => {
+            expect(() => validateMotivation('paint*ing')).toThrow('Input contains invalid characters');
+            expect(() => validateMotivation('tag{ged}')).toThrow('Input contains invalid characters');
+        });
+
+        test('should reject a space-separated list where one term contains special characters', () => {
+            expect(() => validateMotivation('painting tag*')).toThrow('Input contains invalid characters');
+        });
+
+        test('should reject too many motivation terms', () => {
+            const manyTerms = Array(6).fill('painting').join(' ');
+            expect(() => validateMotivation(manyTerms)).toThrow('Too many motivation terms');
         });
     });
 
