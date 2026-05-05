@@ -64,7 +64,12 @@ export async function searchIndex(indexId: string, q: string, motivation: string
     validateUser(user);
 
     const qQuery = buildSearchQueryFromString(q);
-    const motivationQuery = motivation ? ` AND motivation:"${escapeQuickwitQuery(motivation)}"` : '';
+    const motivationTerms = motivation ? motivation.trim().split(/\s+/) : [];
+    const motivationQuery = motivationTerms.length === 1
+        ? ` AND motivation:"${escapeQuickwitQuery(motivationTerms[0])}"`
+        : motivationTerms.length > 1
+            ? ` AND (${motivationTerms.map(t => `motivation:"${escapeQuickwitQuery(t)}"`).join(' OR ')})`
+            : '';
     const dateQuery = date ? ` AND (${buildDateQueryFromString(date)})` : '';
     const userQuery = user ? ` AND (${buildUserQueryFromString(user)})` : '';
     const fullQuery = `${qQuery}${motivationQuery}${dateQuery}${userQuery}`;

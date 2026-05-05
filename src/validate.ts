@@ -1,16 +1,6 @@
 import { AnnoSearchValidationError } from "./errors";
 import { normalizeTerm, validateNoSpecialChars, validateQueryComplexity } from "./utils";
 
-export const motivations = [
-    'painting',
-    'supplementing',
-    'contextualizing',
-    'contentState',
-    'highlighting',
-    'commenting',
-    'tagging'
-];
-
 export function validateSearchQueryParameter(query: string): void {
     const trimmedQuery = query.trim();
     if (!trimmedQuery) {
@@ -99,8 +89,16 @@ export function validateMotivation(motivation: string): void {
         return;
     }
 
-    if (!motivations.includes(motivation)) {
-        throw new AnnoSearchValidationError('Invalid motivation parameter');
+    if (motivation.length > 100) {
+        throw new AnnoSearchValidationError('Invalid motivation parameter: too long');
+    }
+
+    const terms = motivation.trim().split(/\s+/);
+    if (terms.length > 5) {
+        throw new AnnoSearchValidationError('Too many motivation terms (max 5)');
+    }
+    for (const term of terms) {
+        validateNoSpecialChars(term);
     }
 }
 
